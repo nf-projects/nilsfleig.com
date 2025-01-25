@@ -16,11 +16,11 @@ export default function Page() {
 					<p className="text-zinc-400 leading-relaxed max-w-2xl">
 						I'm a freshman at UC Davis studying Computer Science. I'm from the
 						Bay Area and like building software projects in my free time.
-						Recently I have also been tinkering with language model fine-tuning
-						and custom evals.
+						Recently I've been tinkering with language model fine-tuning and
+						custom evals.
 					</p>
 					<p className="text-zinc-400 leading-relaxed max-w-2xl">
-						Goal: help humanity reach{" "}
+						I also want to help humanity reach{" "}
 						<a
 							href="https://en.wikipedia.org/wiki/Longevity_escape_velocity"
 							className="text-blue-300 underline"

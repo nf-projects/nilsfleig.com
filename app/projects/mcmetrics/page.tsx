@@ -61,10 +61,10 @@ export default function MCMetricsPage() {
 				</Link>
 
 				<Image
-					src="/projects/mcmetrics/dashboard.png"
+					src="/images/mcmetrics_architecture.png"
 					alt="MCMetrics Dashboard"
-					width={800}
-					height={400}
+					width={1896}
+					height={1460}
 					className="rounded-lg mb-8"
 				/>
 
