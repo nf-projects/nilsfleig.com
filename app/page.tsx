@@ -115,12 +115,6 @@ export default function Page() {
 								slug: "simple-prompt-tools",
 								technologies: ["JavaScript", "Chrome Extension"],
 							},
-							{
-								title: "Circle Metered Crypto Billing",
-								description: "Billing solution for crypto transactions",
-								slug: "circle-metered-billing",
-								technologies: ["Blockchain", "Node.js"],
-							},
 						]}
 					/>
 				</section>
