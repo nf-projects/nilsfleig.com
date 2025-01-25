@@ -20,15 +20,6 @@ export default function Page() {
 						custom evals.
 					</p>
 					<p className="text-zinc-400 leading-relaxed max-w-2xl">
-						I also want to help humanity reach{" "}
-						<a
-							href="https://en.wikipedia.org/wiki/Longevity_escape_velocity"
-							className="text-blue-300 underline"
-						>
-							longevity escape velocity
-						</a>
-					</p>
-					<p className="text-zinc-400 leading-relaxed max-w-2xl">
 						Site last updated: Jan 25, 2025
 					</p>
 				</section>
