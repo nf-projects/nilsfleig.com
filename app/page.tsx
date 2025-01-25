@@ -39,7 +39,7 @@ export default function Page() {
 					<div className="space-y-1">
 						<h3 className="text-3xl font-mono">Founder</h3>
 						<Link
-							href="/projects/mcmetrics"
+							href="https://mcmetrics.net"
 							className="flex items-center gap-2 hover:text-primary transition-colors"
 						>
 							<div className="w-6 h-6 bg-zinc-800"></div>
