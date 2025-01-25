@@ -2,36 +2,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { Github, Mail, Linkedin } from "lucide-react";
 import { ProjectList } from "./components/project-list";
+import { BlogList } from "./components/blog-list";
 
 export default function Page() {
 	return (
 		<div className="mx-auto max-w-4xl px-6 py-12">
-			<header className="mb-16 flex items-center justify-between">
-				<Link href="/" className="text-2xl font-bold">
-					Nils
-				</Link>
-				<nav className="flex gap-6">
-					<Link href="#about" className="hover:text-primary transition-colors">
-						About
-					</Link>
-					<Link
-						href="#projects"
-						className="hover:text-primary transition-colors"
-					>
-						Projects
-					</Link>
-					<Link href="#blog" className="hover:text-primary transition-colors">
-						Blog
-					</Link>
-					<Link
-						href="#contact"
-						className="hover:text-primary transition-colors"
-					>
-						Contact
-					</Link>
-				</nav>
-			</header>
-
 			<main className="space-y-24">
 				<section id="about" className="space-y-4">
 					{/* <h2 className="text-4xl font-bold mb-8">ABOUT</h2> */}
@@ -118,25 +93,68 @@ export default function Page() {
 
 				<section id="projects" className="space-y-8">
 					<h2 className="text-2xl font-mono text-zinc-500">PROJECTS</h2>
-					<ProjectList projects={projects} />
+					<ProjectList
+						projects={[
+							{
+								title: "MCMetrics (Current)",
+								description: "Google Analytics SaaS for Minecraft servers",
+								slug: "mcmetrics",
+								technologies: ["Next.js", "Clickhouse", "ML", "LLMs"],
+								website: "mcmetrics.net",
+							},
+							{
+								title: "MCMetrics (Current)",
+								description: "Analytics platform for Minecraft servers",
+								slug: "mcmetrics",
+								technologies: ["Next.js", "Clickhouse", "Machine Learning"],
+								website: "mcmetrics.net",
+							},
+							{
+								title: "MCMetrics (Current)",
+								description: "Analytics platform for Minecraft servers",
+								slug: "mcmetrics",
+								technologies: ["Next.js", "TypeScript", "Machine Learning"],
+								website: "mcmetrics.net",
+							},
+							{
+								title: "MCMetrics (Current)",
+								description: "Analytics platform for Minecraft servers",
+								slug: "mcmetrics",
+								technologies: ["Next.js", "TypeScript", "Machine Learning"],
+								website: "mcmetrics.net",
+							},
+							// Add other projects as needed
+						]}
+					/>
 				</section>
 
 				<section id="blog" className="space-y-8">
 					<h2 className="text-2xl font-mono text-zinc-500">BLOG</h2>
-					<div className="space-y-4">
-						{blogPosts.map((post) => (
-							<Link
-								key={post.slug}
-								href={`/blog/${post.slug}`}
-								className="block space-y-1 group"
-							>
-								<h3 className="text-xl font-mono group-hover:text-primary group-hover:underline transition-colors">
-									{post.title}
-								</h3>
-								<p className="text-zinc-500 font-mono">{post.date}</p>
-							</Link>
-						))}
-					</div>
+					<BlogList
+						posts={[
+							{
+								title: "Building a Scalable Analytics Platform",
+								slug: "building-scalable-analytics",
+								date: "January 15, 2024",
+							},
+							{
+								title: "The Future of Developer Tools",
+								slug: "future-of-developer-tools",
+								date: "January 1, 2024",
+							},
+							{
+								title: "Implementing Real-time Analytics",
+								slug: "real-time-analytics",
+								date: "December 15, 2023",
+							},
+							{
+								title: "Machine Learning in Game Analytics",
+								slug: "ml-game-analytics",
+								date: "December 1, 2023",
+							},
+							// Add more blog posts as needed
+						]}
+					/>
 				</section>
 
 				<section id="contact" className="space-y-8">
@@ -173,45 +191,3 @@ export default function Page() {
 		</div>
 	);
 }
-
-const projects = [
-	{
-		title: "MCMetrics (Current)",
-		description: "Analytics platform for Minecraft servers",
-		slug: "mcmetrics",
-		technologies: ["Next.js", "TypeScript", "Machine Learning"],
-		website: "mcmetrics.net",
-	},
-	{
-		title: "Portfolio 3.0",
-		description:
-			"Personal portfolio website built with Next.js and TailwindCSS",
-		slug: "portfolio",
-		technologies: ["Next.js", "TailwindCSS", "TypeScript"],
-	},
-	{
-		title: "Weather App",
-		description: "Real-time weather tracking application with global coverage",
-		slug: "weather",
-		technologies: ["React", "OpenWeather API", "ChartJS"],
-	},
-	{
-		title: "Task Manager",
-		description: "Collaborative task management platform for remote teams",
-		slug: "task-manager",
-		technologies: ["Vue.js", "Firebase", "TailwindCSS"],
-	},
-];
-
-const blogPosts = [
-	{
-		title: "Building a Scalable Analytics Platform",
-		slug: "building-scalable-analytics",
-		date: "January 15, 2024",
-	},
-	{
-		title: "The Future of Developer Tools",
-		slug: "future-of-developer-tools",
-		date: "January 1, 2024",
-	},
-];
