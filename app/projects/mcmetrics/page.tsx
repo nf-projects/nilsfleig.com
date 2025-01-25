@@ -10,6 +10,36 @@ export default function MCMetricsPage() {
 					Analytics platform for Minecraft servers
 				</p>
 
+				<div className="mb-6">
+					<p className="text-zinc-400">Related Blog Posts:</p>
+					<ul className="list-disc pl-6">
+						<li>
+							<Link
+								href="/blog/self-host-mcmetrics"
+								className="text-blue-500 underline"
+							>
+								How I Self Host MCMetrics.net
+							</Link>
+						</li>
+						<li>
+							<Link
+								href="/blog/sentence-transformer-centroids"
+								className="text-blue-500 underline"
+							>
+								Using Sentence Transformer Centroids to Detect Message Topics
+							</Link>
+						</li>
+						<li>
+							<Link
+								href="/blog/llm-query-database"
+								className="text-blue-500 underline"
+							>
+								How I Securely Let an LLM Query My Database
+							</Link>
+						</li>
+					</ul>
+				</div>
+
 				<div className="flex flex-wrap gap-2 mb-8">
 					{["Next.js", "TypeScript", "Machine Learning"].map((tech) => (
 						<span

@@ -96,34 +96,31 @@ export default function Page() {
 					<ProjectList
 						projects={[
 							{
-								title: "MCMetrics (Current)",
-								description: "Google Analytics SaaS for Minecraft servers",
-								slug: "mcmetrics",
-								technologies: ["Next.js", "Clickhouse", "ML", "LLMs"],
-								website: "mcmetrics.net",
-							},
-							{
-								title: "MCMetrics (Current)",
-								description: "Analytics platform for Minecraft servers",
-								slug: "mcmetrics",
-								technologies: ["Next.js", "Clickhouse", "Machine Learning"],
-								website: "mcmetrics.net",
-							},
-							{
-								title: "MCMetrics (Current)",
+								title: "MCMetrics.net",
 								description: "Analytics platform for Minecraft servers",
 								slug: "mcmetrics",
 								technologies: ["Next.js", "TypeScript", "Machine Learning"],
 								website: "mcmetrics.net",
 							},
 							{
-								title: "MCMetrics (Current)",
-								description: "Analytics platform for Minecraft servers",
-								slug: "mcmetrics",
-								technologies: ["Next.js", "TypeScript", "Machine Learning"],
-								website: "mcmetrics.net",
+								title: "Blocklands.org",
+								description: "Community platform for Blockland",
+								slug: "blocklands",
+								technologies: ["React", "Node.js"],
+								website: "blocklands.org",
 							},
-							// Add other projects as needed
+							{
+								title: "Simple Prompt Tools Extension",
+								description: "A browser extension for prompt management",
+								slug: "simple-prompt-tools",
+								technologies: ["JavaScript", "Chrome Extension"],
+							},
+							{
+								title: "Circle Metered Crypto Billing",
+								description: "Billing solution for crypto transactions",
+								slug: "circle-metered-billing",
+								technologies: ["Blockchain", "Node.js"],
+							},
 						]}
 					/>
 				</section>
@@ -133,26 +130,26 @@ export default function Page() {
 					<BlogList
 						posts={[
 							{
-								title: "Building a Scalable Analytics Platform",
-								slug: "building-scalable-analytics",
-								date: "January 15, 2024",
+								title: "How I Self Host MCMetrics.net",
+								slug: "self-host-mcmetrics",
+								date: "February 1, 2024",
 							},
 							{
-								title: "The Future of Developer Tools",
-								slug: "future-of-developer-tools",
-								date: "January 1, 2024",
+								title: "Simple Prompt Tools: My AI Development Workflow",
+								slug: "ai-development-workflow",
+								date: "February 5, 2024",
 							},
 							{
-								title: "Implementing Real-time Analytics",
-								slug: "real-time-analytics",
-								date: "December 15, 2023",
+								title:
+									"Using Sentence Transformer Centroids to Detect Message Topics",
+								slug: "sentence-transformer-centroids",
+								date: "February 10, 2024",
 							},
 							{
-								title: "Machine Learning in Game Analytics",
-								slug: "ml-game-analytics",
-								date: "December 1, 2023",
+								title: "How I Securely Let an LLM Query My Database",
+								slug: "llm-query-database",
+								date: "February 15, 2024",
 							},
-							// Add more blog posts as needed
 						]}
 					/>
 				</section>
