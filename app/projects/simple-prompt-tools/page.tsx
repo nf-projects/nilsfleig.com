@@ -66,8 +66,8 @@ export default function SimplePromptToolsPage() {
 						abstract away the context, complex system prompts, etc. and even
 						apply changes to files for you. That's a nice time saver but comes
 						at the cost of sacrificing your "mental model" of the codebase. This
-						means that, as time goes on, you won't even be familiar with your
-						own codebase and won't even be able to properly prompt the LLM for
+						means that, as time goes on, you won't be familiar with your own
+						codebase and won't even be able to properly prompt the LLM for
 						future updates.
 					</p>
 					<p className="text-zinc-300 leading-relaxed font-mono mt-6">
