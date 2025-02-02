@@ -7,7 +7,7 @@ export default function BlocklandsPage() {
 			<article className="prose prose-invert prose-zinc max-w-none">
 				<h1 className="text-4xl font-mono mb-2">Blocklands.org</h1>
 				<p className="text-zinc-500 font-mono mb-6">
-					Community platform for Blockland
+					Skyblock Minecraft Server
 				</p>
 
 				<div className="flex flex-wrap gap-2 mb-8">
@@ -30,19 +30,29 @@ export default function BlocklandsPage() {
 					blocklands.org
 				</Link>
 
-				<Image
+				{/* <Image
 					src="https://picsum.photos/800/400"
 					alt="Blocklands"
 					width={800}
 					height={400}
 					className="rounded-lg mb-8"
-				/>
+				/> */}
 
 				<div className="space-y-6">
 					<p className="text-zinc-300 leading-relaxed font-mono">
-						MCMetrics is an analytics platform designed specifically for
-						Minecraft servers, providing deep insights into player behavior,
-						server performance, and community engagement.
+						Blocklands was a Skyblock Minecraft server that I ran from
+						2021-2024. I advertised it with organic TikTok & Youtube videos
+						which reached over 20 million people. More than 100,000 unique
+						players from around the world played on this server across hundreds
+						of thousands of playtime hours.
+					</p>
+
+					<p className="text-zinc-300 leading-relaxed font-mono">
+						I wrote over 70,000 lines of Java code for the gameplay on
+						Blocklands and coordinated freelance and part time developers and
+						asset artists for gameplay updates. Blocklands was monetized with
+						in-game cosmetic and gameplay items which were purchased by over
+						1,000 unique paying users.
 					</p>
 				</div>
 			</article>
