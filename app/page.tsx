@@ -94,17 +94,17 @@ export default function Page() {
 								website: "mcmetrics.net",
 							},
 							{
+								title: "Simple Prompt Tools Extension",
+								description: "My custom workflow for development with LLMs",
+								slug: "simple-prompt-tools",
+								technologies: ["JavaScript", "Chrome Extension"],
+							},
+							{
 								title: "Blocklands.org",
 								description: "Community platform for Blockland",
 								slug: "blocklands",
 								technologies: ["React", "Node.js"],
 								website: "blocklands.org",
-							},
-							{
-								title: "Simple Prompt Tools Extension",
-								description: "A browser extension for prompt management",
-								slug: "simple-prompt-tools",
-								technologies: ["JavaScript", "Chrome Extension"],
 							},
 						]}
 					/>
@@ -112,18 +112,21 @@ export default function Page() {
 
 				<section id="blog" className="space-y-8">
 					<h2 className="text-2xl font-mono text-zinc-500">BLOG</h2>
-					<BlogList
+					<p className="text-zinc-400 leading-relaxed max-w-2xl">
+						Work in progress
+					</p>
+					{/* <BlogList
 						posts={[
 							{
 								title: "How I Self Host MCMetrics.net",
 								slug: "self-host-mcmetrics",
 								date: "February 1, 2024",
 							},
-							{
-								title: "Simple Prompt Tools: My AI Development Workflow",
-								slug: "ai-development-workflow",
-								date: "February 5, 2024",
-							},
+							// {
+							// 	title: "Simple Prompt Tools: My AI Development Workflow",
+							// 	slug: "ai-development-workflow",
+							// 	date: "February 5, 2024",
+							// },
 							{
 								title:
 									"Using Sentence Transformer Centroids to Detect Message Topics",
@@ -136,7 +139,7 @@ export default function Page() {
 								date: "February 15, 2024",
 							},
 						]}
-					/>
+					/> */}
 				</section>
 
 				<section id="contact" className="space-y-8">
