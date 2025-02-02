@@ -9,7 +9,7 @@ export default function MCMetricsPage() {
 				<p className="text-zinc-500 font-mono mb-6">
 					Analytics platform for Minecraft servers
 				</p>
-				<div className="mb-6">
+				{/* <div className="mb-6">
 					<p className="text-zinc-400">Related Blog Posts:</p>
 					<ul className="list-disc pl-6">
 						<li>
@@ -37,7 +37,7 @@ export default function MCMetricsPage() {
 							</Link>
 						</li>
 					</ul>
-				</div>
+				</div> */}
 				<div className="flex flex-wrap gap-2 mb-8">
 					{["Next.js", "TypeScript", "Machine Learning"].map((tech) => (
 						<span
