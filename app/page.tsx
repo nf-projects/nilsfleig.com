@@ -34,20 +34,20 @@ export default function Page() {
 							className="flex items-center gap-2 hover:text-primary transition-colors"
 						>
 							<div className="w-6 h-6 bg-zinc-800"></div>
-							<span className="font-mono">MCMetrics.net</span>
+							<span className="font-mono">mcmetrics.net</span>
 						</Link>
 						<p className="font-mono text-zinc-500">Nov 2022 - Present</p>
 					</div>
 
 					<div className="space-y-12">
 						<div className="space-y-1">
-							<h3 className="text-3xl font-mono">SWE Intern</h3>
+							<h3 className="text-3xl font-mono">Software Engineering</h3>
 							<Link
 								href="https://orgorg.com"
 								className="flex items-center gap-2 hover:text-primary transition-colors"
 							>
 								<div className="w-6 h-6 bg-zinc-800"></div>
-								<span className="font-mono">OrgOrg</span>
+								<span className="font-mono">orgorg.com</span>
 							</Link>
 							<p className="font-mono text-zinc-500">May 2024 - Present</p>
 						</div>
