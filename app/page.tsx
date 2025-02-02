@@ -20,7 +20,7 @@ export default function Page() {
 						custom evals.
 					</p>
 					<p className="text-zinc-400 leading-relaxed max-w-2xl">
-						Site last updated: Jan 25, 2025
+						Site last updated: February 2025
 					</p>
 				</section>
 
