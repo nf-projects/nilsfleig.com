@@ -66,6 +66,9 @@ function ProjectCard({ project }: { project: Project }) {
 						</span>
 					))}
 				</div>
+				<div className="flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors">
+					<span className="text-sm font-mono underline">Click for details</span>
+				</div>
 			</div>
 		</Link>
 	);

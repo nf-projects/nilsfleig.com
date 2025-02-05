@@ -25,7 +25,7 @@ export default function Page() {
 				</section>
 
 				<section id="currently" className="space-y-4">
-					<h2 className="text-4xl font-bold mb-8">Currently</h2>
+					<h2 className="text-2xl font-mono text-zinc-500">CURRENTLY</h2>
 
 					<div className="space-y-1">
 						<h3 className="text-3xl font-mono">Founder</h3>
