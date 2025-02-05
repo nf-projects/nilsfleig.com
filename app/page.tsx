@@ -90,20 +90,20 @@ export default function Page() {
 								title: "MCMetrics.net",
 								description: "Analytics platform for Minecraft servers",
 								slug: "mcmetrics",
-								technologies: ["Next.js", "TypeScript", "Machine Learning"],
+								technologies: ["Next.js", "Java", "PyTorch"],
 								website: "mcmetrics.net",
 							},
 							{
 								title: "Simple Prompt Tools Extension",
 								description: "My custom workflow for development with LLMs",
 								slug: "simple-prompt-tools",
-								technologies: ["JavaScript", "Chrome Extension"],
+								technologies: ["Workflow", "VSCode Extension"],
 							},
 							{
 								title: "Blocklands.org",
 								description: "Skyblock Minecraft Server",
 								slug: "blocklands",
-								technologies: ["React", "Node.js"],
+								technologies: ["Java", "Linux"],
 								website: "blocklands.org",
 							},
 						]}
