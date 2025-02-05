@@ -53,13 +53,12 @@ export default function SimplePromptToolsPage() {
 					<p className="text-zinc-300 leading-relaxed font-mono mt-6">
 						<b className="underline">Not enough context:</b> I genuinely believe
 						today's LLMs are capable of solving most coding tasks but often fail
-						because of a bad prompt (PEBKAC). You need to give the LLM a
-						high-level overview of the project, your file structure, code
-						standards, and any relevant files to give it a chance to spit out
-						useful output. Solutions like Copilot's @workspace are trying to
-						solve this by generating embeddings for every file, but that doesn't
-						work because file contents are not always semantically similar to
-						the prompt.
+						because of a bad prompt. You need to give the LLM a high-level
+						overview of the project, your file structure, code standards, and
+						any relevant files to give it a chance to spit out useful output.
+						Solutions like Copilot's @workspace are trying to solve this by
+						generating embeddings for every file, but that doesn't work because
+						file contents are not always semantically similar to the prompt.
 					</p>
 					<p className="text-zinc-300 leading-relaxed font-mono mt-6">
 						<b className="underline">Giving up control:</b> A lot of these tools

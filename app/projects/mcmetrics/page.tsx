@@ -70,9 +70,9 @@ export default function MCMetricsPage() {
 					behind. I know this because I used to run my own server.
 				</p>
 				<p className="text-zinc-300 leading-relaxed font-mono mt-6">
-					My company, MCMetrics, offers a business intelligence dashboard to
-					give Minecraft servers access to the same level of analytics that a
-					large tech company would have:
+					MCMetrics offers a business intelligence dashboard to give Minecraft
+					servers access to the same level of analytics that a large tech
+					company would have:
 				</p>
 				<ul className="list-disc pl-6 space-y-2 mt-3">
 					<li>Player Activity Metrics, Retention Curve, etc.</li>
