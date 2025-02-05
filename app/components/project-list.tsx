@@ -20,14 +20,14 @@ export function ProjectList({ projects }: ProjectListProps) {
 
 	return (
 		<div className="space-y-4">
-			{projects.slice(0, 2).map((project) => (
+			{projects.slice(0, 3).map((project) => (
 				<ProjectCard key={project.slug} project={project} />
 			))}
 
-			{!showAll && projects.length > 2 && (
+			{!showAll && projects.length > 3 && (
 				<div className="relative">
 					<div className="absolute inset-0 bg-gradient-to-b from-transparent via-zinc-950/70 to-zinc-950 pointer-events-none" />
-					<ProjectCard project={projects[2]} />
+					<ProjectCard project={projects[3]} />
 					<button
 						onClick={() => setShowAll(true)}
 						className="absolute inset-x-0 bottom-0 w-full py-4 bg-gradient-to-t from-zinc-950 via-zinc-950/90 to-transparent text-white font-mono hover:from-zinc-900 hover:via-zinc-900/90 transition-colors"
@@ -39,7 +39,7 @@ export function ProjectList({ projects }: ProjectListProps) {
 
 			{showAll &&
 				projects
-					.slice(2)
+					.slice(3)
 					.map((project) => (
 						<ProjectCard key={project.slug} project={project} />
 					))}
