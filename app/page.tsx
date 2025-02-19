@@ -87,6 +87,12 @@ export default function Page() {
 					<ProjectList
 						projects={[
 							{
+								title: "TreeHacks 2025: HawkWatch",
+								description: "1st Place Grand Prize - Wildlife conservation through computer vision",
+								slug: "hawkwatch",
+								technologies: ["Computer Vision", "VLM", "Hackathon"],
+							},
+							{
 								title: "MCMetrics.net",
 								description: "Analytics platform for Minecraft servers",
 								slug: "mcmetrics",
