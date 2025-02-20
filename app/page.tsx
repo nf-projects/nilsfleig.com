@@ -88,7 +88,7 @@ export default function Page() {
 						projects={[
 							{
 								title: "TreeHacks 2025: HawkWatch",
-								description: "1st Place Grand Prize - Wildlife conservation through computer vision",
+								description: "1st Place Grand Prize ($11,000) - VLM Security Camera Monitoring",
 								slug: "hawkwatch",
 								technologies: ["Computer Vision", "VLM", "Hackathon"],
 							},
