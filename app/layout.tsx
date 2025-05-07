@@ -5,6 +5,10 @@ import "./globals.css";
 export const metadata: Metadata = {
 	title: "Nils",
 	description: "Nils Personal Site",
+	viewport: {
+		width: "device-width",
+		initialScale: 1,
+	},
 };
 
 export default function RootLayout({
@@ -16,11 +20,11 @@ export default function RootLayout({
 		<html lang="en" className="dark">
 			<body className="min-h-screen bg-zinc-950 font-mono text-zinc-100 antialiased">
 				<div className="mx-auto max-w-4xl px-6">
-					<header className="py-12 mb-16 flex items-center justify-between">
+					<header className="py-6 md:py-12 mb-8 md:mb-16 flex flex-wrap items-center justify-between gap-4">
 						<Link href="/" className="text-2xl font-bold">
 							Nils Fleig
 						</Link>
-						<nav className="flex gap-6">
+						<nav className="flex flex-wrap gap-4 sm:gap-6">
 							<Link
 								href="/#about"
 								className="hover:text-primary transition-colors"

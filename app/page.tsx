@@ -88,16 +88,26 @@ export default function Page() {
 						projects={[
 							{
 								title: "TreeHacks 2025: HawkWatch",
-								description: "1st Place Grand Prize ($11,000) - VLM Security Camera Monitoring",
+								description:
+									"1st Place Grand Prize ($11,000) - VLM Security Camera Monitoring",
 								slug: "hawkwatch",
 								technologies: ["Computer Vision", "VLM", "Hackathon"],
 							},
 							{
 								title: "MCMetrics.net",
-								description: "Analytics platform for Minecraft servers",
+								description:
+									"Analytics platform for Minecraft servers, 3 million + users tracked",
 								slug: "mcmetrics",
 								technologies: ["Next.js", "Java", "PyTorch"],
 								website: "mcmetrics.net",
+							},
+							{
+								title: "Neuroscience EEG Project",
+								description:
+									"EEG Analysis of Stress Anticipation (Neurotech Club)",
+								slug: "neurotech",
+								technologies: ["Python", "MNE", "Machine Learning"],
+								website: "github.com/nf-projects/neurotech_ml",
 							},
 							{
 								title: "Simple Prompt Tools Extension",

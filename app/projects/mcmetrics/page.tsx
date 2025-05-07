@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { Statistics } from "@/app/components/statistics";
 
 export default function MCMetricsPage() {
 	return (
@@ -7,37 +8,11 @@ export default function MCMetricsPage() {
 			<article className="prose prose-invert prose-zinc max-w-none">
 				<h1 className="text-4xl font-mono mb-2">MCMetrics</h1>
 				<p className="text-zinc-500 font-mono mb-6">
-					Analytics platform for Minecraft servers
+					Analytics platform for Minecraft servers, 3 million + users tracked
 				</p>
-				{/* <div className="mb-6">
-					<p className="text-zinc-400">Related Blog Posts:</p>
-					<ul className="list-disc pl-6">
-						<li>
-							<Link
-								href="/blog/self-host-mcmetrics"
-								className="text-blue-500 underline"
-							>
-								How I Self Host MCMetrics.net
-							</Link>
-						</li>
-						<li>
-							<Link
-								href="/blog/sentence-transformer-centroids"
-								className="text-blue-500 underline"
-							>
-								Using Sentence Transformer Centroids to Detect Message Topics
-							</Link>
-						</li>
-						<li>
-							<Link
-								href="/blog/llm-query-database"
-								className="text-blue-500 underline"
-							>
-								How I Securely Let an LLM Query My Database
-							</Link>
-						</li>
-					</ul>
-				</div> */}
+
+				<Statistics />
+
 				<div className="flex flex-wrap gap-2 mb-8">
 					{["Next.js", "TypeScript", "Machine Learning"].map((tech) => (
 						<span
