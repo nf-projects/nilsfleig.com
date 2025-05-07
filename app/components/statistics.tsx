@@ -4,8 +4,8 @@ import React, { useEffect, useState, useRef } from "react";
 import dynamic from "next/dynamic";
 import { PersonIcon, TimerIcon, TableIcon } from "@radix-ui/react-icons";
 
-// Reference date: April 1, 2025, 2pm PST
-const REFERENCE_DATE = new Date("2025-04-01T14:00:00-07:00").getTime();
+// Reference date: May 7, 2025, 1pm PST
+const REFERENCE_DATE = new Date("2025-05-07T13:00:00-07:00").getTime();
 
 // Define the type for stats
 type StatKey = "total_players" | "playtime_hours" | "total_data_points";
@@ -21,7 +21,7 @@ type StatInfo = {
 // Statistics data from the database as of the reference date
 const STATS: Record<StatKey, StatInfo> = {
 	total_players: {
-		value: 957953,
+		value: 8912688,
 		hourlyIncrease: 3467.67,
 		label: "Players Tracked",
 		icon: <PersonIcon className="h-5 w-5" />,
