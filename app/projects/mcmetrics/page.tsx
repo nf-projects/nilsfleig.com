@@ -119,6 +119,15 @@ export default function MCMetricsPage() {
 					<li>August 2024: Started working on a complete recode (V2)</li>
 					<li>January 2025: Launched MCMetrics V2</li>
 				</ul>
+
+				<h3 className="text-xl font-mono mt-8">Usage Growth since Beta</h3>
+				<Image
+					src="/images/usage-growth.png"
+					alt="MCMetrics usage growth chart showing unique players monitored"
+					width={1000}
+					height={600}
+					className="rounded-lg mt-4"
+				/>
 			</article>
 		</div>
 	);
