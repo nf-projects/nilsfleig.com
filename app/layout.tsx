@@ -52,6 +52,16 @@ export default function RootLayout({
 						</nav>
 					</header>
 					{children}
+					<footer className="py-8 mt-16 border-t border-zinc-800">
+						<div className="flex justify-center">
+							<Link
+								href="/book"
+								className="text-zinc-400 hover:text-primary transition-colors text-sm"
+							>
+								Book Converter
+							</Link>
+						</div>
+					</footer>
 				</div>
 			</body>
 		</html>
