@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import ePub from 'epubjs';
 import { Upload, FileText, Download, Loader2, BookOpen } from 'lucide-react';
 
@@ -10,7 +10,7 @@ interface Chapter {
   content: string;
 }
 
-const EpubConverter: React.FC = () => {
+export default function EpubConverter() {
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [fileName, setFileName] = useState('');
@@ -21,7 +21,7 @@ const EpubConverter: React.FC = () => {
   
   // Settings
   const [fontSize, setFontSize] = useState(12);
-  const [lineHeight, setLineHeight] = useState(1.6);
+  const [lineHeight, setLineHeight] = useState(1.7);
 
   const processEpub = async (file: File) => {
     setIsLoading(true);
@@ -34,15 +34,12 @@ const EpubConverter: React.FC = () => {
       const arrayBuffer = await file.arrayBuffer();
       const book = ePub(arrayBuffer);
       
-      // Wait for the book to be fully opened
       await book.ready;
       
-      // Get Metadata
       const metadata = await book.loaded.metadata;
       setBookTitle(metadata.title || 'Untitled');
       setBookAuthor(metadata.creator || 'Unknown Author');
 
-      // Get navigation (table of contents) for chapter titles
       const navigation = await book.loaded.navigation;
       const tocMap = new Map<string, string>();
       if (navigation?.toc) {
@@ -51,7 +48,6 @@ const EpubConverter: React.FC = () => {
         });
       }
 
-      // Get spine items
       const spineItems: any[] = [];
       book.spine.each((item: any) => {
         spineItems.push(item);
@@ -64,7 +60,6 @@ const EpubConverter: React.FC = () => {
         const item = spineItems[i];
         
         try {
-          // Load section content
           const section = await book.section(item.href || item.index);
           if (!section) {
             setProgress(Math.round(((i + 1) / totalItems) * 100));
@@ -74,12 +69,10 @@ const EpubConverter: React.FC = () => {
           const contents = await section.load(book.load.bind(book));
           
           if (contents) {
-            // Get chapter title from TOC or generate one
             const chapterTitle = tocMap.get(item.href) || 
                                  tocMap.get(item.canonical) ||
                                  `Section ${i + 1}`;
             
-            // Clean up content - try different ways to get HTML
             let htmlContent = '';
             
             if (contents.body && contents.body.innerHTML) {
@@ -89,18 +82,14 @@ const EpubConverter: React.FC = () => {
             } else if (typeof contents === 'string') {
               htmlContent = contents;
             } else {
-              // Try to serialize the node
               const serializer = new XMLSerializer();
               htmlContent = serializer.serializeToString(contents.body || contents.documentElement || contents);
             }
             
-            // Remove script tags
+            // Clean up content
             htmlContent = htmlContent.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '');
-            
-            // Remove style tags (we'll use our own styling)
             htmlContent = htmlContent.replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, '');
             
-            // Skip empty or whitespace-only content
             const textContent = htmlContent.replace(/<[^>]*>/g, '').trim();
             if (textContent.length > 10) {
               loadedChapters.push({
@@ -123,8 +112,6 @@ const EpubConverter: React.FC = () => {
 
       setChapters(loadedChapters);
       setIsLoading(false);
-      
-      // Cleanup
       book.destroy();
       
     } catch (err) {
@@ -141,267 +128,418 @@ const EpubConverter: React.FC = () => {
     }
   };
 
-  // Inject styles only on client to avoid hydration mismatch
-  useEffect(() => {
-    const styleId = 'epub-converter-styles';
-    if (document.getElementById(styleId)) return;
-
-    const style = document.createElement('style');
-    style.id = styleId;
-    style.textContent = `
-        @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,300;1,8..60,400&display=swap');
-        
-        .epub-page {
-            font-family: 'Source Serif 4', 'Charter', 'Georgia', serif;
-        }
-
-        /* Hide nav/footer/header */
-        .scanlines, nav, footer, header { 
-          display: none !important; 
-          visibility: hidden !important;
-          height: 0 !important;
-          overflow: hidden !important;
-        }
-
-        @media print {
-            nav, footer, header, .scanlines {
-                display: none !important;
-                visibility: hidden !important;
-            }
-            @page {
-                size: letter portrait;
-                margin: 0.6in 0.75in 0.8in 0.75in;
-                @bottom-center {
-                    content: counter(page);
-                    font-family: 'Source Serif 4', 'Charter', 'Georgia', serif;
-                    font-size: 10pt;
-                    color: #666;
-                }
-            }
-            html, body {
-                background: white !important;
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-            }
-            .no-print {
-                display: none !important;
-            }
-            .chapter-section {
-                break-inside: avoid-page;
-            }
-            .page-break {
-                break-before: page;
-            }
-        }
-
-        /* Book content typography - iBooks inspired */
-        .book-content {
-            color: #1d1d1f;
-        }
-        .book-content p {
-            margin-bottom: 1em;
-            text-align: justify;
-            text-indent: 1.5em;
-            hyphens: auto;
-            -webkit-hyphens: auto;
-        }
-        .book-content p:first-of-type {
-            text-indent: 0;
-        }
-        .book-content h1, .book-content h2, .book-content h3, .book-content h4 {
-            margin-top: 1.5em;
-            margin-bottom: 0.75em;
-            font-weight: 600;
-            line-height: 1.25;
-            text-indent: 0 !important;
-            text-align: left !important;
-        }
-        .book-content h1 { font-size: 1.75em; }
-        .book-content h2 { font-size: 1.4em; }
-        .book-content h3 { font-size: 1.15em; }
-        .book-content img {
-            max-width: 100%;
-            height: auto;
-            margin: 1.5em auto;
-            display: block;
-        }
-        .book-content blockquote {
-            margin: 1.5em 0;
-            padding-left: 1.25em;
-            border-left: 3px solid #d1d1d6;
-            font-style: italic;
-            color: #636366;
-        }
-        .book-content a {
-            color: #007aff;
-            text-decoration: none;
-        }
-        .book-content ul, .book-content ol {
-            margin: 1em 0;
-            padding-left: 2em;
-        }
-        .book-content li {
-            margin-bottom: 0.5em;
-        }
-        
-        /* Custom scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #18181b; }
-        ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #52525b; }
-    `;
-    document.head.appendChild(style);
-
-    return () => {
-      const existingStyle = document.getElementById(styleId);
-      if (existingStyle) {
-        existingStyle.remove();
-      }
-    };
-  }, []);
-
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 print:bg-white print:text-black">
+    <>
+      <style jsx global>{`
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
+
+        :root {
+          --paper: #fdfcfa;
+          --ink: #2d2a26;
+          --accent: #8b7355;
+        }
+
+        body {
+          font-family: 'Crimson Pro', Georgia, serif;
+          background: #f5f4f2;
+          color: var(--ink);
+          -webkit-font-smoothing: antialiased;
+        }
+
+        /* The book page container - what you see is what you print */
+        .book-page {
+          background: var(--paper);
+          color: var(--ink);
+          max-width: 680px;
+          margin: 0 auto;
+          padding: 60px 72px;
+          min-height: 100vh;
+          box-shadow: 0 0 60px rgba(0,0,0,0.08);
+        }
+
+        /* Typography */
+        .book-page p {
+          margin: 0 0 1em 0;
+          text-align: justify;
+          text-indent: 1.5em;
+          hyphens: auto;
+          -webkit-hyphens: auto;
+        }
+
+        .book-page p:first-of-type {
+          text-indent: 0;
+        }
+
+        .book-page h1, .book-page h2, .book-page h3, .book-page h4, .book-page h5, .book-page h6 {
+          font-weight: 500;
+          line-height: 1.3;
+          margin: 1.5em 0 0.75em 0;
+          text-indent: 0 !important;
+        }
+
+        .book-page h1 { font-size: 2em; text-align: center; }
+        .book-page h2 { font-size: 1.5em; }
+        .book-page h3 { font-size: 1.25em; font-style: italic; }
+
+        .book-page blockquote {
+          margin: 1.5em 2em;
+          font-style: italic;
+          color: #555;
+        }
+
+        .book-page a {
+          color: inherit;
+          text-decoration: underline;
+          text-decoration-color: var(--accent);
+        }
+
+        .book-page img {
+          max-width: 100%;
+          height: auto;
+          display: block;
+          margin: 2em auto;
+        }
+
+        .book-page ul, .book-page ol {
+          margin: 1em 0 1em 2em;
+        }
+
+        .book-page li {
+          margin-bottom: 0.5em;
+        }
+
+        /* Title page styling */
+        .title-section {
+          text-align: center;
+          padding: 80px 0 60px 0;
+          border-bottom: 1px solid #e8e6e3;
+          margin-bottom: 40px;
+        }
+
+        .title-section h1 {
+          font-size: 2.5em;
+          font-weight: 400;
+          margin: 0 0 0.5em 0;
+          letter-spacing: -0.02em;
+        }
+
+        .title-section .author {
+          font-size: 1.3em;
+          font-style: italic;
+          color: var(--accent);
+        }
+
+        /* Chapter divider */
+        .chapter-divider {
+          border: none;
+          text-align: center;
+          margin: 3em 0;
+        }
+
+        .chapter-divider::before {
+          content: "• • •";
+          color: var(--accent);
+          letter-spacing: 0.5em;
+        }
+
+        /* Control bar - hidden in print */
+        .control-bar {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          background: rgba(45, 42, 38, 0.97);
+          backdrop-filter: blur(10px);
+          padding: 12px 24px;
+          z-index: 100;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          font-family: system-ui, -apple-system, sans-serif;
+          color: #fdfcfa;
+          border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .control-bar button,
+        .control-bar label {
+          background: rgba(255,255,255,0.1);
+          border: none;
+          color: inherit;
+          padding: 8px 16px;
+          border-radius: 6px;
+          cursor: pointer;
+          font-size: 14px;
+          font-weight: 500;
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          transition: background 0.2s;
+        }
+
+        .control-bar button:hover,
+        .control-bar label:hover {
+          background: rgba(255,255,255,0.2);
+        }
+
+        .control-bar .primary-btn {
+          background: var(--accent);
+        }
+
+        .control-bar .primary-btn:hover {
+          background: #9d856a;
+        }
+
+        .control-bar input[type="range"] {
+          width: 80px;
+          accent-color: var(--accent);
+        }
+
+        /* Upload state */
+        .upload-state {
+          min-height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding-top: 60px;
+          font-family: system-ui, -apple-system, sans-serif;
+        }
+
+        .upload-box {
+          text-align: center;
+          max-width: 400px;
+        }
+
+        .upload-icon {
+          width: 80px;
+          height: 80px;
+          background: linear-gradient(135deg, var(--accent), #6b5a47);
+          border-radius: 20px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto 24px auto;
+          color: white;
+        }
+
+        .upload-box h2 {
+          font-size: 24px;
+          margin-bottom: 8px;
+          color: var(--ink);
+        }
+
+        .upload-box p {
+          color: #666;
+          margin-bottom: 24px;
+          font-size: 15px;
+        }
+
+        .upload-btn {
+          background: var(--accent);
+          color: white;
+          border: none;
+          padding: 14px 28px;
+          border-radius: 10px;
+          font-size: 16px;
+          font-weight: 600;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          transition: all 0.2s;
+        }
+
+        .upload-btn:hover {
+          background: #9d856a;
+          transform: translateY(-1px);
+        }
+
+        .error-box {
+          background: #fef2f2;
+          border: 1px solid #fecaca;
+          color: #991b1b;
+          padding: 12px 16px;
+          border-radius: 8px;
+          margin-bottom: 20px;
+          font-size: 14px;
+        }
+
+        /* Loading state */
+        .loading-state {
+          min-height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding-top: 60px;
+          font-family: system-ui, -apple-system, sans-serif;
+        }
+
+        .loading-box {
+          text-align: center;
+        }
+
+        .progress-bar {
+          width: 200px;
+          height: 4px;
+          background: #e5e5e5;
+          border-radius: 2px;
+          overflow: hidden;
+          margin: 16px auto;
+        }
+
+        .progress-fill {
+          height: 100%;
+          background: var(--accent);
+          border-radius: 2px;
+          transition: width 0.3s;
+        }
+
+        /* Print styles - keep layout identical, just hide chrome and set margins */
+        @media print {
+          body {
+            background: var(--paper) !important;
+          }
+
+          .control-bar,
+          .no-print {
+            display: none !important;
+          }
+
+          /* Extra breathing room at the top of each printed page */
+          .book-page {
+            padding-top: 32px;
+          }
+
+          @page {
+            size: letter;
+            margin: 0.75in 1in;
+          }
+        }
+      `}</style>
 
       {/* Control Bar */}
-      <div className="no-print fixed top-0 left-0 w-full bg-zinc-950/95 backdrop-blur-md border-b border-zinc-800 z-50 px-6 py-4">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2 text-zinc-100 font-mono">
-                    <BookOpen size={20} strokeWidth={1.5} />
-                    <span className="text-sm">EPUB → PDF</span>
-                </div>
-                {fileName && (
-                    <span className="text-xs text-zinc-500 border-l pl-4 border-zinc-800 truncate max-w-[200px] font-mono">
-                        {fileName}
-                    </span>
-                )}
+      <div className="control-bar no-print">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <BookOpen size={20} />
+            <span style={{ fontWeight: 600 }}>EPUB → PDF</span>
+          </div>
+          {fileName && (
+            <span style={{ fontSize: '13px', opacity: 0.6, borderLeft: '1px solid rgba(255,255,255,0.2)', paddingLeft: '16px' }}>
+              {fileName}
+            </span>
+          )}
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          {!isLoading && chapters.length > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginRight: '8px', paddingRight: '16px', borderRight: '1px solid rgba(255,255,255,0.2)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '11px', textTransform: 'uppercase', opacity: 0.5 }}>Size</span>
+                <input 
+                  type="range" 
+                  min="10" 
+                  max="16" 
+                  value={fontSize} 
+                  onChange={(e) => setFontSize(Number(e.target.value))}
+                />
+                <span style={{ fontSize: '12px', width: '20px' }}>{fontSize}</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '11px', textTransform: 'uppercase', opacity: 0.5 }}>Line</span>
+                <input 
+                  type="range" 
+                  min="1.4" 
+                  max="2.0" 
+                  step="0.1"
+                  value={lineHeight} 
+                  onChange={(e) => setLineHeight(Number(e.target.value))}
+                />
+                <span style={{ fontSize: '12px', width: '24px' }}>{lineHeight}</span>
+              </div>
             </div>
+          )}
 
-            <div className="flex items-center gap-4">
-                {!isLoading && chapters.length > 0 && (
-                    <div className="flex items-center gap-4 mr-2 border-r pr-4 border-zinc-800">
-                        <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-mono uppercase text-zinc-500 tracking-wide">Size</span>
-                            <input 
-                                type="range" 
-                                min="10" 
-                                max="16" 
-                                value={fontSize} 
-                                onChange={(e) => setFontSize(Number(e.target.value))}
-                                className="w-20 accent-primary"
-                            />
-                            <span className="text-xs text-zinc-400 w-6 font-mono">{fontSize}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-mono uppercase text-zinc-500 tracking-wide">Line</span>
-                            <input 
-                                type="range" 
-                                min="1.4" 
-                                max="2.0" 
-                                step="0.1"
-                                value={lineHeight} 
-                                onChange={(e) => setLineHeight(Number(e.target.value))}
-                                className="w-20 accent-primary"
-                            />
-                            <span className="text-xs text-zinc-400 w-6 font-mono">{lineHeight}</span>
-                        </div>
-                    </div>
-                )}
+          <label style={{ cursor: 'pointer' }}>
+            <Upload size={16} />
+            Upload
+            <input type="file" accept=".epub" onChange={handleFileUpload} style={{ display: 'none' }} />
+          </label>
 
-                <label className="cursor-pointer bg-zinc-800 hover:bg-zinc-700 text-zinc-100 px-4 py-2 rounded text-sm font-mono transition-colors flex items-center gap-2">
-                    <Upload size={16} />
-                    Upload
-                    <input type="file" accept=".epub" onChange={handleFileUpload} className="hidden" />
-                </label>
-
-                {chapters.length > 0 && (
-                    <button 
-                        onClick={() => window.print()}
-                        className="bg-primary hover:bg-primary/80 text-primary-foreground px-4 py-2 rounded text-sm font-mono transition-colors flex items-center gap-2"
-                    >
-                        <Download size={16} />
-                        Save PDF
-                    </button>
-                )}
-            </div>
+          {chapters.length > 0 && (
+            <button onClick={() => window.print()} className="primary-btn">
+              <Download size={16} />
+              Save PDF
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="pt-20 pb-16 px-6 min-h-screen epub-page">
-        {/* Upload State */}
-        {!isLoading && chapters.length === 0 && (
-            <div className="max-w-md mx-auto mt-24 text-center">
-                <div className="w-20 h-20 bg-zinc-800 rounded-lg flex items-center justify-center mx-auto mb-6">
-                    <FileText size={36} className="text-zinc-400" />
-                </div>
-                <h2 className="text-2xl font-mono text-zinc-100 mb-2">Convert your eBook</h2>
-                <p className="text-zinc-400 mb-8 text-sm font-mono">
-                    Upload an .epub file to create a PDF, optimized for reading and annotation.
-                </p>
-                
-                {error && (
-                    <div className="mb-6 p-4 bg-zinc-800 border border-zinc-700 rounded text-zinc-300 text-sm font-mono">
-                        {error}
-                    </div>
-                )}
-                
-                <label className="cursor-pointer bg-primary hover:bg-primary/80 text-primary-foreground px-8 py-3 rounded font-mono transition-colors inline-flex items-center gap-2">
-                    <Upload size={20} />
-                    Select EPUB File
-                    <input type="file" accept=".epub" onChange={handleFileUpload} className="hidden" />
-                </label>
+      {/* Upload State */}
+      {!isLoading && chapters.length === 0 && (
+        <div className="upload-state">
+          <div className="upload-box">
+            <div className="upload-icon">
+              <FileText size={36} />
             </div>
-        )}
+            <h2>Convert your eBook</h2>
+            <p>Upload an .epub file to create a beautiful PDF for reading and annotation.</p>
+            
+            {error && <div className="error-box">{error}</div>}
+            
+            <label className="upload-btn" style={{ cursor: 'pointer' }}>
+              <Upload size={20} />
+              Select EPUB File
+              <input type="file" accept=".epub" onChange={handleFileUpload} style={{ display: 'none' }} />
+            </label>
+          </div>
+        </div>
+      )}
 
-        {/* Loading State */}
-        {isLoading && (
-            <div className="max-w-md mx-auto mt-24 text-center">
-                <Loader2 className="animate-spin text-primary mx-auto mb-5" size={48} strokeWidth={1.5} />
-                <h3 className="text-xl font-mono text-zinc-100 mb-3">Processing Book...</h3>
-                <div className="w-full bg-zinc-800 rounded-full h-1.5 mb-2 max-w-xs mx-auto overflow-hidden">
-                    <div className="bg-primary h-full rounded-full transition-all duration-300" style={{ width: `${progress}%` }}></div>
-                </div>
-                <p className="text-zinc-400 text-sm font-mono">{progress}% complete</p>
+      {/* Loading State */}
+      {isLoading && (
+        <div className="loading-state">
+          <div className="loading-box">
+            <Loader2 size={48} style={{ animation: 'spin 1s linear infinite', color: 'var(--accent)' }} />
+            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+            <h3 style={{ marginTop: '16px', fontSize: '18px' }}>Processing Book...</h3>
+            <div className="progress-bar">
+              <div className="progress-fill" style={{ width: `${progress}%` }} />
             </div>
-        )}
+            <p style={{ fontSize: '14px', color: '#666' }}>{progress}% complete</p>
+          </div>
+        </div>
+      )}
 
-        {/* Book Content */}
-        {chapters.length > 0 && (
-            <div 
-                className="max-w-[680px] mx-auto bg-white print:bg-white print:shadow-none print:max-w-none px-12 py-16 md:px-16 md:py-20 book-content border border-zinc-800 print:border-none"
-                style={{
-                    fontSize: `${fontSize}pt`,
-                    lineHeight: lineHeight
-                }}
-            >
-                {/* Title Page */}
-                <div className="text-center mb-16 pb-12 border-b border-gray-100 print:border-gray-300">
-                    <h1 className="text-4xl font-semibold mb-4 text-[#1d1d1f] leading-tight" style={{ textIndent: 0 }}>
-                        {bookTitle}
-                    </h1>
-                    <p className="text-xl text-gray-500 italic">{bookAuthor}</p>
-                </div>
-
-                {/* Chapters */}
-                {chapters.map((chapter, idx) => (
-                    <div key={chapter.id} className="chapter-section mb-12">
-                        {/* Chapter content */}
-                        <div dangerouslySetInnerHTML={{ __html: chapter.content }} />
-                        
-                        {/* Divider between chapters (screen only) */}
-                        {idx < chapters.length - 1 && (
-                            <div className="no-print h-px bg-gray-100 my-12 mx-auto w-1/4"></div>
-                        )}
-                    </div>
-                ))}
+      {/* Book Content - This is exactly what gets printed */}
+      {chapters.length > 0 && (
+        <div style={{ paddingTop: '60px' }}>
+          <div 
+            className="book-page"
+            style={{
+              fontSize: `${fontSize}pt`,
+              lineHeight: lineHeight
+            }}
+          >
+            {/* Title Page */}
+            <div className="title-section">
+              <h1>{bookTitle}</h1>
+              <p className="author">{bookAuthor}</p>
             </div>
-        )}
-      </div>
-    </div>
+
+            {/* Chapters */}
+            {chapters.map((chapter, idx) => (
+              <div key={chapter.id}>
+                <div dangerouslySetInnerHTML={{ __html: chapter.content }} />
+                {idx < chapters.length - 1 && <hr className="chapter-divider" />}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </>
   );
-};
-
-export default EpubConverter;
-
+}
