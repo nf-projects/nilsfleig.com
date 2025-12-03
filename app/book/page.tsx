@@ -73,14 +73,26 @@ const EpubConverter: React.FC = () => {
           
           const contents = await section.load(book.load.bind(book));
           
-          if (contents && contents.body) {
+          if (contents) {
             // Get chapter title from TOC or generate one
             const chapterTitle = tocMap.get(item.href) || 
                                  tocMap.get(item.canonical) ||
                                  `Section ${i + 1}`;
             
-            // Clean up content - get HTML from document body
-            let htmlContent = contents.body.innerHTML;
+            // Clean up content - try different ways to get HTML
+            let htmlContent = '';
+            
+            if (contents.body && contents.body.innerHTML) {
+              htmlContent = contents.body.innerHTML;
+            } else if (contents.documentElement && contents.documentElement.innerHTML) {
+              htmlContent = contents.documentElement.innerHTML;
+            } else if (typeof contents === 'string') {
+              htmlContent = contents;
+            } else {
+              // Try to serialize the node
+              const serializer = new XMLSerializer();
+              htmlContent = serializer.serializeToString(contents.body || contents.documentElement || contents);
+            }
             
             // Remove script tags
             htmlContent = htmlContent.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '');
