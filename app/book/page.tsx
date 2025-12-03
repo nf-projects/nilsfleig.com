@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ePub from 'epubjs';
 import { Upload, FileText, Download, Loader2, BookOpen } from 'lucide-react';
 
@@ -73,14 +73,14 @@ const EpubConverter: React.FC = () => {
           
           const contents = await section.load(book.load.bind(book));
           
-          if (contents && contents.innerHTML) {
+          if (contents && contents.body) {
             // Get chapter title from TOC or generate one
             const chapterTitle = tocMap.get(item.href) || 
                                  tocMap.get(item.canonical) ||
                                  `Section ${i + 1}`;
             
-            // Clean up content
-            let htmlContent = contents.innerHTML;
+            // Clean up content - get HTML from document body
+            let htmlContent = contents.body.innerHTML;
             
             // Remove script tags
             htmlContent = htmlContent.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '');
@@ -129,10 +129,14 @@ const EpubConverter: React.FC = () => {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 print:bg-white print:text-black">
-      {/* Inline Styles */}
-      <style>{`
+  // Inject styles only on client to avoid hydration mismatch
+  useEffect(() => {
+    const styleId = 'epub-converter-styles';
+    if (document.getElementById(styleId)) return;
+
+    const style = document.createElement('style');
+    style.id = styleId;
+    style.textContent = `
         @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,300;1,8..60,400&display=swap');
         
         .epub-page {
@@ -233,7 +237,19 @@ const EpubConverter: React.FC = () => {
         ::-webkit-scrollbar-track { background: #18181b; }
         ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #52525b; }
-      `}</style>
+    `;
+    document.head.appendChild(style);
+
+    return () => {
+      const existingStyle = document.getElementById(styleId);
+      if (existingStyle) {
+        existingStyle.remove();
+      }
+    };
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 print:bg-white print:text-black">
 
       {/* Control Bar */}
       <div className="no-print fixed top-0 left-0 w-full bg-zinc-950/95 backdrop-blur-md border-b border-zinc-800 z-50 px-6 py-4">
