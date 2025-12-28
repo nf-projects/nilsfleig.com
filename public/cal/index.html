@@ -1,0 +1,562 @@
+<!--
+
+This calendar UI is based on the MIT licensed Neato Calendar: https://github.com/abetusk/neatocal
+
+--><!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Neato Calendar</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+
+<script type='text/javascript'>
+
+var NEATOCAL_PARAM = {
+  "color_cell": [],
+  "year": 2026,
+  "weekday_code" : [ "Su", "M", "T", "W", "R", "F", "Sa"  ],
+  "month_code": [ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" ],
+  "start_month" : 0,
+  "n_month" : 12
+};
+
+// simple HTML convenience functions
+//
+var H = {
+  "text": function(txt) { return document.createTextNode(txt); },
+  "div": function() { return document.createElement("div"); },
+  "tr": function() { return document.createElement("tr"); },
+  "th": function(v) {
+    let th = document.createElement("th");
+    if (typeof v !== "undefined") { th.innerHTML = v; }
+    return th;
+  },
+  "td": function() { return document.createElement("td"); },
+  "span": function(v,_class) {
+    let s = document.createElement("span");
+    if (typeof v !== "undefined") { s.innerHTML = v; }
+    if (typeof _class !== "undefined") { s.classList.add(_class); }
+    return s;
+  }
+};
+
+function neatocal_default() {
+  let year      = NEATOCAL_PARAM.year;
+  let start_mo  = NEATOCAL_PARAM.start_month;
+  let n_mo      = NEATOCAL_PARAM.n_month;
+
+  let ui_tr_mo = document.getElementById("ui_tr_month_name");
+  ui_tr_mo.innerHTML = "";
+  for (let i_mo = start_mo; i_mo < (start_mo+n_mo); i_mo++) {
+    ui_tr_mo.appendChild( H.th( NEATOCAL_PARAM.month_code[ i_mo%12 ] ) );
+  }
+
+  let tbody = document.getElementById("ui_tbody");
+  for (let idx=0; idx<31; idx++) {
+
+    let tr = H.tr();
+    if ((typeof NEATOCAL_PARAM.cell_height !== "undefined") &&
+        (NEATOCAL_PARAM.cell_height != null) &&
+        (NEATOCAL_PARAM.cell_height != "")) {
+      tr.style.height = NEATOCAL_PARAM.cell_height;
+    }
+
+
+    let cur_year = year;
+    for (let i_mo = start_mo; i_mo < (start_mo+n_mo); i_mo++) {
+      
+      //if (i_mo >= 12) { cur_year = parseInt(year)+1; }
+      cur_year = parseInt(year) + Math.floor(i_mo/12);
+
+      let cur_mo = i_mo%12;
+
+      let nday_in_mo = new Date(cur_year,cur_mo+1,0).getDate();
+
+      let td = H.td();
+      td.style.width = (100/n_mo).toString() + "%";
+      td.id = "ui_" + fmt_date(cur_year, cur_mo+1, idx+1);
+
+      if (idx < nday_in_mo) {
+
+        let dt = new Date(cur_year, cur_mo, idx+1);
+
+        let d = NEATOCAL_PARAM.weekday_code[ dt.getDay() ];
+
+
+
+
+        let span_date = H.span((idx+1).toString(), "date");
+        let span_day = H.span(d, "day");
+
+        td.appendChild( span_date );
+        td.appendChild( span_day );
+
+
+
+      }
+      tr.appendChild(td);
+
+    }
+
+    tbody.appendChild(tr);
+
+  }
+
+}
+
+function fmt_date(y,m,d) {
+  let res = y.toString() + "-";
+  if (m<10) {
+    res += "0";
+  }
+  res += m.toString() + "-";
+  if (d < 10) {
+    res += "0";
+  }
+  res += d.toString();
+  return res;
+}
+
+function neatocal_aligned_weekdays() {
+  let year      = parseInt(NEATOCAL_PARAM.year);
+  let start_mo  = parseInt(NEATOCAL_PARAM.start_month);
+  let n_mo      = parseInt(NEATOCAL_PARAM.n_month);
+
+  let ui_tr_mo = document.getElementById("ui_tr_month_name");
+  ui_tr_mo.innerHTML = "";
+  for (let i_mo = start_mo; i_mo < (start_mo+n_mo); i_mo++) {
+    ui_tr_mo.appendChild( H.th( NEATOCAL_PARAM.month_code[ i_mo%12 ] ) );
+  }
+
+  // start_day, when to start the first day in the month.
+  // day_in_mo_start is the number of days past the start_day
+  //   the month starts, so we know how much to skip over when
+  //   displaying the aligned cells.
+  //
+  let max_start = -1;
+  let start_day = NEATOCAL_PARAM.start_day;
+  let day_in_mo_start = [];
+  for (let i=0; i<n_mo; i++) { day_in_mo_start.push(0); }
+  for (let i_mo = start_mo; i_mo < (start_mo+n_mo); i_mo++) {
+    let cur_year = parseInt(year) + Math.floor(i_mo/12);
+    let cur_mo = i_mo%12;
+    let s = new Date(cur_year, cur_mo, 1).getDay();
+    day_in_mo_start[i_mo - start_mo] = s;
+
+    if (day_in_mo_start[i_mo - start_mo] > max_start) {
+      max_start = day_in_mo_start[i_mo - start_mo];
+    }
+  }
+
+  let tbody = document.getElementById("ui_tbody");
+  for (let idx=0; idx<42; idx++) {
+
+    let tr = H.tr();
+    if ((typeof NEATOCAL_PARAM.cell_height !== "undefined") &&
+        (NEATOCAL_PARAM.cell_height != null) &&
+        (NEATOCAL_PARAM.cell_height != "")) {
+      tr.style.height = NEATOCAL_PARAM.cell_height;
+    }
+
+    let cur_year = year;
+    for (let i_mo = start_mo; i_mo < (start_mo+n_mo); i_mo++) {
+
+      cur_year = parseInt(year) + Math.floor(i_mo/12);
+
+      // cur_mo is the month in the current year
+      // nday_in_mo is the number of days in the month under consideration
+      // day_idx is the day of the month this cell would fall in,
+      //  which can be out of bounds (less than 0 or greater than the number of
+      //  days in the month)
+      //
+      let cur_mo = i_mo%12;
+      let nday_in_mo = new Date(cur_year,cur_mo+1,0).getDate();
+      let day_idx = idx - ((day_in_mo_start[i_mo - start_mo] - start_day + 7)%7);
+
+      let td = H.td();
+      td.style.width = (100/n_mo).toString() + "%";
+      td.id = "ui_" + fmt_date(cur_year, cur_mo+1, day_idx+1);
+
+      // if our day falls within bounds, we decorate the td with the appropriate
+      // values
+      //
+      if ((day_idx >= 0) &&
+          (day_idx < nday_in_mo)) {
+
+        let dt = new Date(cur_year, cur_mo, day_idx+1);
+
+        let wd_code = NEATOCAL_PARAM.weekday_code[ dt.getDay() ];
+
+
+
+
+        // date - day in month
+        // day  - name of weekday (e.g. Su,M,T,W,R,F,Sa)
+        //
+        let span_date = H.span((day_idx+1).toString(), "date");
+        let span_day = H.span(wd_code, "day");
+
+        td.appendChild( span_date );
+        td.appendChild( span_day );
+
+
+
+      }
+      tr.appendChild(td);
+
+    }
+
+    tbody.appendChild(tr);
+  }
+
+}
+
+function neatocal_post_process() {
+  // Apply UCD color cells
+  if ("color_cell" in NEATOCAL_PARAM) {
+    let color_cell = NEATOCAL_PARAM.color_cell;
+
+    for (let i=0; i < color_cell.length; i++) {
+      let ele = document.getElementById("ui_" + color_cell[i].date);
+      if ((typeof ele === "undefined") || (ele == null)) { continue; }
+      ele.style.background = color_cell[i].color;
+    }
+  }
+}
+
+function neatocal_init() {
+  let sp = new URLSearchParams(window.location.search);
+
+  // Only parse year parameter
+  let year_param = sp.get("year");
+  //---
+
+  // UCD Logic (Always Active)
+  {
+    
+    // UCD overrides
+    if ((year_param == null) || (typeof year_param === "undefined")) {
+      year_param = "2026";
+    }
+
+    // Colors
+    const COLOR_WINTER = "#e0f7fa";
+    const COLOR_WINTER_FINAL = "#ffccbc";
+    const COLOR_SPRING = "#f1f8e9";
+    const COLOR_SPRING_FINAL = "#ffe0b2";
+    const COLOR_FALL = "#f3e5f5";
+    const COLOR_FALL_FINAL = "#ffccbc";
+
+    // Helper to add range
+    const add_range = (start_date, end_date, color) => {
+      let d = new Date(start_date);
+      let e = new Date(end_date);
+      while (d <= e) {
+        let yyyy_mm_dd = d.toISOString().split('T')[0];
+        NEATOCAL_PARAM.color_cell.push({ "date": yyyy_mm_dd, "color": color });
+        d.setDate(d.getDate() + 1);
+      }
+    };
+
+    // Winter 2026
+    // Quarter: Jan 2 - Mar 20
+    add_range("2026-01-02", "2026-03-20", COLOR_WINTER);
+    // Finals: Mar 16 - 20 (override winter color)
+    add_range("2026-03-16", "2026-03-20", COLOR_WINTER_FINAL);
+
+    // Spring 2026
+    // Quarter: Mar 26 - Jun 11
+    add_range("2026-03-26", "2026-06-11", COLOR_SPRING);
+    // Finals: Jun 5, Jun 8-11
+    add_range("2026-06-05", "2026-06-05", COLOR_SPRING_FINAL);
+    add_range("2026-06-08", "2026-06-11", COLOR_SPRING_FINAL);
+
+    // Fall 2026
+    // Quarter: Sept 23 - Dec 4
+    add_range("2026-09-23", "2026-12-04", COLOR_FALL);
+    // Finals: Dec 7 - 11
+    add_range("2026-12-07", "2026-12-11", COLOR_FALL_FINAL);
+
+    // Populate Legend
+    let legend = document.getElementById("ui_ucd_legend");
+    if (legend) {
+      legend.style.display = "block";
+      const add_legend_item = (label, color) => {
+        let li = document.createElement("li");
+        li.style.display = "inline-block";
+        li.style.margin = "0 1em";
+        li.innerHTML = `<span style="display:inline-block; width:1em; height:1em; background:${color}; margin-right:0.3em; vertical-align:middle; border:1px solid #ccc;"></span>${label}`;
+        legend.appendChild(li);
+      };
+
+      add_legend_item("Winter Quarter", COLOR_WINTER);
+      add_legend_item("Spring Quarter", COLOR_SPRING);
+      add_legend_item("Fall Quarter", COLOR_FALL);
+      add_legend_item("Finals Week", COLOR_FALL_FINAL); 
+    }
+
+  }
+
+  //---
+
+  let year = 2026;
+  if ((year_param != null) &&
+      (typeof year_param !== "undefined")) {
+    year = year_param;
+  }
+  NEATOCAL_PARAM.year = year;
+
+
+
+  // Just render
+  neatocal_render();
+}
+
+function neatocal_render() {
+
+  let cur_start_month = NEATOCAL_PARAM.start_month;
+  let month_remain = NEATOCAL_PARAM.n_month;
+  let s_year = parseInt(NEATOCAL_PARAM.year);
+  let e_year = parseInt(NEATOCAL_PARAM.year) + Math.floor((cur_start_month + month_remain-1)/12)
+
+  let layout = NEATOCAL_PARAM.layout;
+
+  let year_fraction_tot = 0;
+  let year_fraction = [];
+  for ( let y = s_year; y <= e_year; y++ ) {
+    let del_mo = (((cur_start_month + month_remain) > 12) ? (12-cur_start_month) : (month_remain));
+    year_fraction.push( del_mo );
+    cur_start_month = 0;
+    month_remain -= del_mo;
+
+    year_fraction_tot += del_mo;
+  }
+
+  for (let i=0; i < year_fraction.length; i++) {
+    year_fraction[i] /= year_fraction_tot;
+  }
+
+  // if we only have one year, put it in the center
+  // otherwise find the proportion of other years
+  //   and adjust the year header appropriately
+
+  let ui_year = document.getElementById("ui_year");
+  ui_year.innerHTML = "";
+
+  for ( let y = s_year, idx = 0; y <= e_year; y++, idx++) {
+    let span = H.span();
+    span.innerHTML = y.toString();
+    span.style["display"] = "inline-block";
+    span.style["width"] = (100*year_fraction[idx]).toString() + "%";
+    span.style["justify-content"] = "center";
+    span.style["text-align"] = "center";
+    span.style["margin"] = "0 0 .5em 0";
+
+    ui_year.appendChild( span );
+  }
+
+  //---
+
+  if (layout == "aligned-weekdays") {
+    neatocal_aligned_weekdays();
+  }
+  else {
+    neatocal_default();
+  }
+
+  neatocal_post_process();
+}
+</script>
+<style>
+/*
+MIT License
+
+Copyright (c) 2022 Neatnik LLC
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
+@media print {
+  @page {
+    margin: 0;
+  }
+  #ui_info {
+    display: none;
+  }
+}
+
+html {
+	font-family: 'Oswald';
+}
+html, body {
+	height: 100%;
+	margin: 0;
+	padding: 0;
+}
+table {
+	width: 100%;
+	height: calc(100% - 2.5em);
+	border-collapse: separate;
+	border-spacing: .5em 0;
+}
+td, th {
+	font-weight: normal;
+	text-transform: uppercase;
+	border-bottom: 1px solid #888;
+	padding: .3vmin .3vmin;
+	font-size: .9vmin;
+	font-weight: 300;
+	color: #000;
+}
+th {
+	font-size: 1.1vmin;
+	padding: 0;
+}
+td:empty {
+	border: 0;
+}
+.date {
+	display: inline-block;
+	width: 1.1em;
+}
+.day {
+	display: inline-block;
+	text-align: center;
+	width: 1em;
+	color: #888;
+}
+.weekend {
+  font-weight: 400;
+}
+p {
+	margin: 0 0 .5em 0;
+	text-align: center;
+}
+* {
+	print-color-adjust: exact;
+	-webkit-print-color-adjust: exact;
+}
+#ui_info {
+	font-family: 'Inter', sans-serif;
+	position: absolute;
+	top: 0;
+	left: 0;
+	margin: 5em 2em;
+	width: calc(100% - 6em);
+	background: #333;
+	color: #eee;
+	padding: 1em 1em .5em 1em;
+	font-size: 2vmax;
+	border-radius: .2em;
+}
+#ui_info p {
+	text-align: left;
+	margin: 0 0 1em 0;
+	line-height: 135%;
+}
+#ui_info a {
+	color: inherit;
+}
+</style>
+
+</head>
+
+<body>
+
+  <!-- INFO -->
+
+  <div id="ui_info" style='display:none;'>
+    <p> If you print this page, you’ll get a nifty calendar that displays
+        all of the year’s dates on a single page. It will automatically
+        fit on a single sheet of paper of any size. For best results,
+        adjust your print settings to landscape orientation and disable
+        the header and footer.
+    </p>
+
+    <p> Take in the year all at once. Fold it up and carry it with you.
+        Jot down your notes on it. Plan things out and observe the
+        passage of time. Above all else, be kind to others.
+    </p>
+
+    <p> You can addin URL parameters to change the year, display style, start month, etc.
+
+    <ul>
+      <li> year </li>
+      <li> start_month  </li>
+      <li> n_month </li>
+      <li> layout (`default` or `aligned-weekdays`)</li>
+      <li> start_day (only valid with aligned-weekdays layout)</li>
+      <li> highlight_color </li>
+      <li> weekday_code </li>
+      <li> month_code </li>
+      <li> help </li>
+    </ul>
+
+    For example <a href='?year=2030'>`?year=2030`</a>
+
+    </p>
+
+    <p style="font-size: 80%; color: #999;">
+      <a href="https://github.com/abetusk/neatocal">Source code</a></p>
+    <p style="font-size: 80%; color: #999;">Based on <a href="https://neatnik.net/">Neatnik's</a> &#183;
+      original <a href="https://github.com/neatnik/calendar">source code</a></p>
+  </div>
+
+  <!-- INFO -->
+
+
+
+  <ul id="ui_ucd_legend" style="display:none; list-style:none; padding:0; margin:0 0 1em 0; text-align:center;"></ul>
+
+  <div id='ui_year' style='width:100%;'>
+      <span style='display:inline-block; width:100%; justify-content:center; text-align:center; margin: 0 0 .5em 0;'>YYYY</span>
+  </div>
+
+  <table id='ui_table'>
+    <thead id='ui_thead'>
+      <tr id='ui_tr_month_name'>
+        <th>Jan</th>
+        <th>Feb</th>
+        <th>Mar</th>
+        <th>Apr</th>
+        <th>May</th>
+        <th>Jun</th>
+        <th>Jul</th>
+        <th>Aug</th>
+        <th>Sep</th>
+        <th>Oct</th>
+        <th>Nov</th>
+        <th>Dec</th>
+      </tr>
+    </thead>
+
+    <tbody id='ui_tbody'>
+    </tbody>
+
+  </table>
+
+</body>
+
+<script>
+  neatocal_init();
+</script>
+</html>
