@@ -46,6 +46,7 @@ export async function POST(request: NextRequest) {
 interface TimeSlot {
   hour: number;
   available: boolean;
+  quarters: boolean[]; // Availability for :00-:15, :15-:30, :30-:45, :45-:60
 }
 
 interface Room {
@@ -96,14 +97,18 @@ function parseRoomAvailability(html: string): Room[] {
       const hourIndex = hour - 5;
       const startSlot = hourIndex * 4 + 1; // data-index is 1-based
 
+      const quarters: boolean[] = [];
       let availableCount = 0;
       for (let i = 0; i < 4; i++) {
-        if (slotMap[startSlot + i]) availableCount++;
+        const isFree = slotMap[startSlot + i] === true; // Strict check for true
+        quarters.push(isFree);
+        if (isFree) availableCount++;
       }
 
       availability.push({
         hour,
         available: availableCount >= 2, // At least half the hour is free
+        quarters,
       });
     }
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { X } from "lucide-react";
 
 // Building coordinates estimated from UC Davis campus map
 // Reference: MU (38.5424, -121.7495), Olson (38.5400, -121.7476)
@@ -69,6 +70,7 @@ const BUILDINGS: Record<string, { name: string; lat: number; lng: number }> = {
 interface TimeSlot {
   hour: number;
   available: boolean;
+  quarters: boolean[];
 }
 
 interface Room {
@@ -78,12 +80,23 @@ interface Room {
   availability: TimeSlot[];
 }
 
+interface RoomStatus {
+  status: "available" | "soon" | "occupied";
+  message: string;
+  availableUntil?: string;
+}
+
+interface RoomWithStatus {
+  room: Room;
+  status: RoomStatus;
+}
+
 interface BuildingResult {
   buildingId: string;
   buildingName: string;
   distance: number;
   rooms: Room[];
-  availableNow: Room[];
+  availableNow: RoomWithStatus[];
   error?: string;
 }
 
@@ -111,15 +124,101 @@ function getCurrentHour(): number {
   return new Date().getHours();
 }
 
+function formatTime(hour: number, minute: number = 0): string {
+  const mStr = minute.toString().padStart(2, "0");
+  if (hour === 0) return `12:${mStr} AM`;
+  if (hour < 12) return `${hour}:${mStr} AM`;
+  if (hour === 12) return `12:${mStr} PM`;
+  return `${hour - 12}:${mStr} PM`;
+}
+
+function getPreciseAvailableUntil(availability: TimeSlot[], startHour: number, startQ: number): string {
+  let currentHour = startHour;
+  let currentQ = startQ;
+
+  while (currentHour <= 23) {
+    const slot = availability.find(s => s.hour === currentHour);
+    // If slot missing or quarter not free, we found the end
+    if (!slot || !slot.quarters[currentQ]) {
+      // Return the time this quarter starts
+      const min = currentQ * 15;
+      return formatTime(currentHour, min);
+    }
+
+    currentQ++;
+    if (currentQ > 3) {
+      currentQ = 0;
+      currentHour++;
+    }
+  }
+  return "11:59 PM";
+}
+
+function calculateRoomStatus(room: Room, hour: number, minute: number): RoomStatus {
+  const currentSlot = room.availability.find((s) => s.hour === hour);
+  if (!currentSlot) return { status: "occupied", message: "Closed" };
+
+  const qIndex = Math.floor(minute / 15);
+  // Check if strict availability is needed or if we can accept "soon"
+  
+  // 1. Check current quarter
+  if (currentSlot.quarters[qIndex]) {
+    const until = getPreciseAvailableUntil(room.availability, hour, qIndex);
+    return {
+      status: "available",
+      message: `Until ${until}`,
+      availableUntil: until
+    };
+  }
+
+  // 2. Check if available soon (within 20 mins)
+  let nextHour = hour;
+  let nextQ = qIndex + 1;
+  if (nextQ > 3) {
+    nextHour++;
+    nextQ = 0;
+  }
+
+  // Calculate wait time until next quarter starts
+  const currentTotalMinutes = hour * 60 + minute;
+  const nextStartMinutes = nextHour * 60 + nextQ * 15;
+  const waitMinutes = nextStartMinutes - currentTotalMinutes;
+
+  if (waitMinutes <= 20) {
+    const nextSlot = room.availability.find((s) => s.hour === nextHour);
+    if (nextSlot && nextSlot.quarters[nextQ]) {
+       const until = getPreciseAvailableUntil(room.availability, nextHour, nextQ);
+       return {
+         status: "soon",
+         message: `Free in ${waitMinutes}m`,
+         availableUntil: until
+       };
+    }
+  }
+
+  return { status: "occupied", message: "Occupied" };
+}
+
+interface RoomDetailPopup {
+  buildingName: string;
+  room: Room;
+}
+
 export default function RoomsPage() {
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<BuildingResult[]>([]);
-  const [hoursAhead, setHoursAhead] = useState(2);
-  const [maxDistance, setMaxDistance] = useState(1000); // meters
-  const [excludeOutdoor, setExcludeOutdoor] = useState(true);
+  const [selectedTime, setSelectedTime] = useState<string>(() => {
+    const now = new Date();
+    return `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+  });
+  const [roomDetailPopup, setRoomDetailPopup] = useState<RoomDetailPopup | null>(null);
+  const [roomSearchInputs, setRoomSearchInputs] = useState<Record<string, string>>({});
+  const [openAutocomplete, setOpenAutocomplete] = useState<string | null>(null);
 
+  const hoursAhead = 2;
+  const maxDistance = 1000; // meters
   const OUTDOOR_KEYWORDS = ["lobby", "courtyard", "lawn", "patio", "terrace", "garden", "plaza", "outdoor", "field", "quad", "deck"];
 
   const requestLocation = useCallback(() => {
@@ -147,11 +246,26 @@ export default function RoomsPage() {
     requestLocation();
   }, [requestLocation]);
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.autocomplete-container')) {
+        setOpenAutocomplete(null);
+      }
+    };
+
+    if (openAutocomplete) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [openAutocomplete]);
+
   const searchRooms = async () => {
     if (!location) return;
 
     setLoading(true);
-    const currentHour = getCurrentHour();
+    const [hourStr, minuteStr] = selectedTime.split(":");
+    const currentHour = parseInt(hourStr);
     const today = new Date().toISOString().split("T")[0];
 
     // Filter buildings by distance
@@ -184,21 +298,20 @@ export default function RoomsPage() {
         const data = await response.json();
         const rooms: Room[] = data.rooms || [];
 
-        // Filter rooms that are available for the next N hours
-        const availableNow = rooms.filter((room) => {
-          // Exclude outdoor/lobby spaces if checkbox is checked
-          if (excludeOutdoor) {
-            const nameLower = room.name.toLowerCase();
-            if (OUTDOOR_KEYWORDS.some((kw) => nameLower.includes(kw))) {
-              return false;
-            }
+        // Filter and map rooms
+        const availableNow: RoomWithStatus[] = [];
+        
+        rooms.forEach((room) => {
+          // Always exclude outdoor/lobby spaces
+          const nameLower = room.name.toLowerCase();
+          if (OUTDOOR_KEYWORDS.some((kw) => nameLower.includes(kw))) {
+            return;
           }
 
-          for (let h = currentHour; h < currentHour + hoursAhead && h <= 23; h++) {
-            const slot = room.availability.find((s) => s.hour === h);
-            if (!slot?.available) return false;
+          const status = calculateRoomStatus(room, currentHour, parseInt(minuteStr));
+          if (status.status === "available" || status.status === "soon") {
+            availableNow.push({ room, status });
           }
-          return true;
         });
 
         return {
@@ -225,6 +338,48 @@ export default function RoomsPage() {
     setLoading(false);
   };
 
+  const handleRoomSearch = (buildingId: string, buildingName: string, room?: Room) => {
+    if (room) {
+      setRoomDetailPopup({ buildingName, room });
+      setRoomSearchInputs({ ...roomSearchInputs, [buildingId]: "" });
+      setOpenAutocomplete(null);
+      return;
+    }
+
+    const searchTerm = roomSearchInputs[buildingId]?.trim().toLowerCase();
+    if (!searchTerm) return;
+
+    const building = results.find((b) => b.buildingId === buildingId);
+    if (!building) return;
+
+    // Find room that matches the search term
+    const matchingRoom = building.rooms.find(
+      (room) => room.name.toLowerCase().includes(searchTerm) || room.id === searchTerm
+    );
+
+    if (matchingRoom) {
+      setRoomDetailPopup({ buildingName, room: matchingRoom });
+      setRoomSearchInputs({ ...roomSearchInputs, [buildingId]: "" });
+      setOpenAutocomplete(null);
+    }
+  };
+
+  const getFilteredRooms = (buildingId: string): Room[] => {
+    const searchTerm = roomSearchInputs[buildingId]?.trim().toLowerCase();
+    if (!searchTerm) return [];
+
+    const building = results.find((b) => b.buildingId === buildingId);
+    if (!building) return [];
+
+    return building.rooms
+      .filter((room) => 
+        room.name.toLowerCase().includes(searchTerm) || 
+        room.id === searchTerm ||
+        room.name.toLowerCase().startsWith(searchTerm)
+      )
+      .slice(0, 8); // Limit to 8 suggestions
+  };
+
   const hasBuildings = Object.keys(BUILDINGS).length > 0;
 
   return (
@@ -238,7 +393,7 @@ export default function RoomsPage() {
         </div>
       )}
 
-      <div className="bg-zinc-900 rounded-lg p-4 mb-6 space-y-4">
+      <div className="bg-zinc-900 rounded-lg p-4 mb-6">
         <div className="flex flex-wrap gap-4 items-end">
           <div>
             <label className="block text-sm text-zinc-400 mb-1">Your Location</label>
@@ -254,31 +409,13 @@ export default function RoomsPage() {
           </div>
 
           <div>
-            <label className="block text-sm text-zinc-400 mb-1">Max Distance</label>
-            <select
-              value={maxDistance}
-              onChange={(e) => setMaxDistance(Number(e.target.value))}
+            <label className="block text-sm text-zinc-400 mb-1">Time</label>
+            <input
+              type="time"
+              value={selectedTime}
+              onChange={(e) => setSelectedTime(e.target.value)}
               className="bg-zinc-800 border border-zinc-700 rounded px-3 py-1.5 text-sm"
-            >
-              <option value={300}>300m</option>
-              <option value={500}>500m</option>
-              <option value={1000}>1km</option>
-              <option value={2000}>2km</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm text-zinc-400 mb-1">Free for next</label>
-            <select
-              value={hoursAhead}
-              onChange={(e) => setHoursAhead(Number(e.target.value))}
-              className="bg-zinc-800 border border-zinc-700 rounded px-3 py-1.5 text-sm"
-            >
-              <option value={1}>1 hour</option>
-              <option value={2}>2 hours</option>
-              <option value={3}>3 hours</option>
-              <option value={4}>4 hours</option>
-            </select>
+            />
           </div>
 
           <button
@@ -289,62 +426,187 @@ export default function RoomsPage() {
             {loading ? "Searching..." : "Find Rooms"}
           </button>
         </div>
-
-        <label className="flex items-center gap-2 text-sm text-zinc-400 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={excludeOutdoor}
-            onChange={(e) => setExcludeOutdoor(e.target.checked)}
-            className="w-4 h-4 rounded border-zinc-600 bg-zinc-800 text-blue-600 focus:ring-blue-500"
-          />
-          Exclude outdoor spaces (lobbies, patios, lawns, etc.)
-        </label>
       </div>
 
       {results.length > 0 && (
         <div className="space-y-4">
-          {results.map((building) => (
-            <div key={building.buildingId} className="bg-zinc-900 rounded-lg p-4">
-              <div className="flex justify-between items-start mb-3">
-                <div>
-                  <h2 className="text-xl font-semibold">{building.buildingName}</h2>
-                  <p className="text-zinc-400 text-sm">{formatDistance(building.distance)} away</p>
+          {results.map((building) => {
+            const [hourStr] = selectedTime.split(":");
+            const currentHour = parseInt(hourStr);
+            return (
+              <div key={building.buildingId} className="bg-zinc-900 rounded-lg p-4">
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                    <h2 className="text-xl font-semibold">{building.buildingName}</h2>
+                    <p className="text-zinc-400 text-sm">{formatDistance(building.distance)} away</p>
+                  </div>
+                  <span
+                    className={`px-2 py-1 rounded text-sm ${
+                      building.availableNow.length > 0 ? "bg-green-900 text-green-300" : "bg-zinc-800 text-zinc-400"
+                    }`}
+                  >
+                    {building.availableNow.length} available
+                  </span>
                 </div>
-                <span
-                  className={`px-2 py-1 rounded text-sm ${
-                    building.availableNow.length > 0 ? "bg-green-900 text-green-300" : "bg-zinc-800 text-zinc-400"
-                  }`}
-                >
-                  {building.availableNow.length} available
-                </span>
-              </div>
 
-              {building.error ? (
-                <p className="text-red-400 text-sm">{building.error}</p>
-              ) : building.availableNow.length > 0 ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                  {building.availableNow.slice(0, 8).map((room) => (
-                    <div key={room.id} className="bg-zinc-800 rounded px-3 py-2 text-sm">
-                      <p className="font-medium">{room.name}</p>
-                      {room.capacity && <p className="text-zinc-400 text-xs">Capacity: {room.capacity}</p>}
+                {building.error ? (
+                  <p className="text-red-400 text-sm">{building.error}</p>
+                ) : (
+                  <>
+                    {building.availableNow.length > 0 ? (
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 mb-4">
+                        {building.availableNow.slice(0, 8).map(({ room, status }) => {
+                          return (
+                            <div
+                              key={room.id}
+                              className={`rounded px-3 py-2 text-sm cursor-pointer transition-colors ${
+                                status.status === "soon" 
+                                  ? "bg-yellow-900/20 hover:bg-yellow-900/30 border border-yellow-900/50" 
+                                  : "bg-zinc-800 hover:bg-zinc-700"
+                              }`}
+                              onClick={() => setRoomDetailPopup({ buildingName: building.buildingName, room })}
+                            >
+                              <p className="font-medium">{room.name}</p>
+                              {room.capacity && <p className="text-zinc-400 text-xs">Capacity: {room.capacity}</p>}
+                              <p className={`text-xs mt-1 ${
+                                status.status === "soon" ? "text-yellow-500 font-medium" : "text-green-400"
+                              }`}>
+                                {status.message}
+                              </p>
+                            </div>
+                          );
+                        })}
+                        {building.availableNow.length > 8 && (
+                          <div className="bg-zinc-800 rounded px-3 py-2 text-sm text-zinc-400">
+                            +{building.availableNow.length - 8} more
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <p className="text-zinc-500 text-sm mb-4">No rooms available for the selected time</p>
+                    )}
+
+                    <div className="border-t border-zinc-800 pt-4">
+                      <p className="text-xs text-zinc-500 mb-2">Search for a specific room in {building.buildingName}:</p>
+                      <div className="relative flex gap-2">
+                        <div className="flex-1 relative autocomplete-container">
+                          <input
+                            type="text"
+                            placeholder="Room number or name..."
+                            value={roomSearchInputs[building.buildingId] || ""}
+                            onChange={(e) => {
+                              setRoomSearchInputs({ ...roomSearchInputs, [building.buildingId]: e.target.value });
+                              setOpenAutocomplete(building.buildingId);
+                            }}
+                            onFocus={() => {
+                              if (roomSearchInputs[building.buildingId]) {
+                                setOpenAutocomplete(building.buildingId);
+                              }
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                handleRoomSearch(building.buildingId, building.buildingName);
+                              } else if (e.key === "Escape") {
+                                setOpenAutocomplete(null);
+                              }
+                            }}
+                            className="w-full bg-zinc-800 border border-zinc-700 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-blue-600"
+                          />
+                          {openAutocomplete === building.buildingId && getFilteredRooms(building.buildingId).length > 0 && (
+                            <div className="absolute z-10 w-full mt-1 bg-zinc-800 border border-zinc-700 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                              {getFilteredRooms(building.buildingId).map((room) => (
+                                <button
+                                  key={room.id}
+                                  onClick={() => handleRoomSearch(building.buildingId, building.buildingName, room)}
+                                  className="w-full text-left px-3 py-2 hover:bg-zinc-700 transition-colors flex justify-between items-center"
+                                >
+                                  <div>
+                                    <p className="text-sm font-medium">{room.name}</p>
+                                    {room.capacity && (
+                                      <p className="text-xs text-zinc-400">Capacity: {room.capacity}</p>
+                                    )}
+                                  </div>
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        <button
+                          onClick={() => handleRoomSearch(building.buildingId, building.buildingName)}
+                          className="bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded px-4 py-1.5 text-sm transition-colors"
+                        >
+                          Search
+                        </button>
+                      </div>
                     </div>
-                  ))}
-                  {building.availableNow.length > 8 && (
-                    <div className="bg-zinc-800 rounded px-3 py-2 text-sm text-zinc-400">
-                      +{building.availableNow.length - 8} more
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <p className="text-zinc-500 text-sm">No rooms available for the selected time</p>
-              )}
-            </div>
-          ))}
+                  </>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
 
       {!loading && results.length === 0 && location && hasBuildings && (
         <p className="text-zinc-500 text-center py-8">Click "Find Rooms" to search for available spaces</p>
+      )}
+
+      {/* Room Detail Popup */}
+      {roomDetailPopup && (
+        <div
+          className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
+          onClick={() => setRoomDetailPopup(null)}
+        >
+          <div
+            className="bg-zinc-900 rounded-lg p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-start mb-4">
+              <div>
+                <h2 className="text-2xl font-bold">{roomDetailPopup.room.name}</h2>
+                <p className="text-zinc-400">{roomDetailPopup.buildingName}</p>
+                {roomDetailPopup.room.capacity && (
+                  <p className="text-zinc-400 text-sm">Capacity: {roomDetailPopup.room.capacity}</p>
+                )}
+              </div>
+              <button
+                onClick={() => setRoomDetailPopup(null)}
+                className="text-zinc-400 hover:text-white transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="text-lg font-semibold mb-3">Today's Availability</h3>
+              <p className="text-xs text-zinc-400 mb-2 flex gap-2">
+                <span className="flex items-center gap-1"><span className="w-3 h-3 bg-green-500 rounded-sm"></span> Available</span>
+                <span className="flex items-center gap-1"><span className="w-3 h-3 bg-red-500/50 rounded-sm"></span> Occupied</span>
+              </p>
+              <div className="grid grid-cols-1 gap-1">
+                {roomDetailPopup.room.availability.map((slot) => (
+                  <div
+                    key={slot.hour}
+                    className="flex items-center px-4 py-2 rounded bg-zinc-800"
+                  >
+                    <span className="font-medium w-20 text-sm">{formatTime(slot.hour)}</span>
+                    <div className="flex-1 flex gap-1 h-6">
+                      {slot.quarters.map((isFree, i) => (
+                        <div
+                          key={i}
+                          className={`flex-1 rounded-sm transition-opacity hover:opacity-80 ${
+                            isFree ? "bg-green-500" : "bg-red-500/50"
+                          }`}
+                          title={`${formatTime(slot.hour, i * 15)} - ${isFree ? "Available" : "Occupied"}`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
