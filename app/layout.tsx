@@ -53,12 +53,19 @@ export default function RootLayout({
 					</header>
 					{children}
 					<footer className="py-8 mt-16 border-t border-zinc-800">
-						<div className="flex justify-center">
+						<div className="flex justify-center gap-4">
 							<Link
 								href="/book"
 								className="text-zinc-400 hover:text-primary transition-colors text-sm"
 							>
 								Book Converter
+							</Link>
+							<span className="text-zinc-600">•</span>
+							<Link
+								href="/rooms"
+								className="text-zinc-400 hover:text-primary transition-colors text-sm"
+							>
+								UCD Room Checker
 							</Link>
 						</div>
 					</footer>
