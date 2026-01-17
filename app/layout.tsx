@@ -67,6 +67,13 @@ export default function RootLayout({
 							>
 								UCD Room Checker
 							</Link>
+							<span className="text-zinc-600">•</span>
+							<Link
+								href="/journal"
+								className="text-zinc-400 hover:text-primary transition-colors text-sm"
+							>
+								Write
+							</Link>
 						</div>
 					</footer>
 				</div>

@@ -43,8 +43,13 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        paper: '#fdfbf7',
+        ink: '#2d2a2e',
+        danger: '#e05252',
       },
       fontFamily: {
+        serif: ['"Crimson Pro"', 'serif'],
+        sans: ['"Inter"', 'sans-serif'],
         mono: [
           "ui-monospace",
           "SFMono-Regular",
@@ -56,6 +61,16 @@ const config: Config = {
           "monospace",
         ],
       },
+      animation: {
+        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'fade-in': 'fadeIn 0.5s ease-out forwards',
+      },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0', transform: 'translateY(10px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        }
+      }
     },
   },
   plugins: [],
