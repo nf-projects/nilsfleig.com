@@ -7,7 +7,7 @@ import { ResultsScreen } from './components/ResultsScreen';
 import { AppState } from './types';
 
 // Configuration constants
-const INACTIVITY_THRESHOLD = 7; // 7 seconds
+const INACTIVITY_THRESHOLD = 10; // 10 seconds
 
 export default function JournalPage() {
   const [appState, setAppState] = useState<AppState>(AppState.WELCOME);

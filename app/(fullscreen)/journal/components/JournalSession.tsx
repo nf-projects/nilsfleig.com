@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { JournalConfig } from '../types';
 
 interface JournalSessionProps {
@@ -12,15 +12,14 @@ export const JournalSession: React.FC<JournalSessionProps> = ({ config, onComple
   const [timeLeft, setTimeLeft] = useState(config.sessionDuration);
   const [inactivityTime, setInactivityTime] = useState(0); // in ms
   const [nudge, setNudge] = useState<string | null>(null);
-  const [isDanger, setIsDanger] = useState(false);
 
   const lastKeystrokeRef = useRef<number>(Date.now());
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const sessionIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const DANGER_THRESHOLD_MS = 4000; // Start warning at 4s
-  const FAILURE_THRESHOLD_MS = config.inactivityThreshold * 1000;
+  const FADE_START_MS = 2000; // Start fading after 2s
+  const FULL_BLACK_MS = config.inactivityThreshold * 1000; // Fully black at threshold
 
   // Initial focus
   useEffect(() => {
@@ -57,23 +56,12 @@ export const JournalSession: React.FC<JournalSessionProps> = ({ config, onComple
       const now = Date.now();
       const diff = now - lastKeystrokeRef.current;
       setInactivityTime(diff);
-
-      if (diff > DANGER_THRESHOLD_MS) {
-        setIsDanger(true);
-      } else {
-        setIsDanger(false);
-      }
-
-      if (diff >= FAILURE_THRESHOLD_MS) {
-        if (intervalRef.current) clearInterval(intervalRef.current);
-        onFail();
-      }
     }, 100); // Check every 100ms
 
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [FAILURE_THRESHOLD_MS, onFail]);
+  }, []);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Backspace' || e.key === 'Delete') {
@@ -83,7 +71,6 @@ export const JournalSession: React.FC<JournalSessionProps> = ({ config, onComple
     }
     // Update timestamp
     lastKeystrokeRef.current = Date.now();
-    setIsDanger(false);
     setInactivityTime(0);
   };
 
@@ -104,8 +91,10 @@ export const JournalSession: React.FC<JournalSessionProps> = ({ config, onComple
     setTimeout(() => setNudge(null), 1500);
   };
 
-  // Calculate opacity/color based on danger
-  const dangerProgress = Math.max(0, (inactivityTime - DANGER_THRESHOLD_MS) / (FAILURE_THRESHOLD_MS - DANGER_THRESHOLD_MS));
+  // Calculate opacity based on inactivity
+  // 0 -> FADE_START_MS: opacity 0
+  // FADE_START_MS -> FULL_BLACK_MS: opacity 0 -> 1
+  const darknessOpacity = Math.min(1, Math.max(0, (inactivityTime - FADE_START_MS) / (FULL_BLACK_MS - FADE_START_MS)));
   
   // Format timer
   const minutes = Math.floor(timeLeft / 60);
@@ -113,17 +102,13 @@ export const JournalSession: React.FC<JournalSessionProps> = ({ config, onComple
   const formattedTime = `${minutes}:${seconds.toString().padStart(2, '0')}`;
 
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-paper transition-colors duration-1000"
-         style={{ 
-           backgroundColor: isDanger ? `rgba(253, 251, 247, ${1 - dangerProgress})` : '#fdfbf7' 
-         }}>
+    <div className="relative w-full h-screen overflow-hidden bg-paper transition-colors duration-1000">
       
-      {/* Visual Danger Overlay - Vignette effect that grows */}
+      {/* Darkness Overlay - Solid black that fades in */}
       <div 
-        className="pointer-events-none absolute inset-0 z-10 transition-opacity duration-200"
+        className="pointer-events-none absolute inset-0 z-50 bg-black transition-opacity duration-200"
         style={{
-          background: 'radial-gradient(circle, transparent 50%, #1a1a1a 100%)',
-          opacity: isDanger ? dangerProgress * 0.8 : 0
+          opacity: darknessOpacity
         }}
       />
       
@@ -132,7 +117,7 @@ export const JournalSession: React.FC<JournalSessionProps> = ({ config, onComple
         <div className="text-ink font-sans text-sm tracking-widest uppercase opacity-50">
           Write
         </div>
-        <div className={`font-mono text-xl transition-colors duration-300 ${isDanger ? 'text-red-600' : 'text-ink'}`}>
+        <div className="font-mono text-xl text-ink transition-colors duration-300">
           {formattedTime}
         </div>
       </div>
@@ -155,13 +140,6 @@ export const JournalSession: React.FC<JournalSessionProps> = ({ config, onComple
       {nudge && (
         <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 bg-ink text-white px-6 py-2 rounded-full shadow-xl animate-fade-in z-30">
           <span className="font-sans text-sm tracking-wide">{nudge}</span>
-        </div>
-      )}
-
-      {/* Danger Text Indicator */}
-      {isDanger && (
-        <div className="absolute top-24 left-1/2 transform -translate-x-1/2 text-danger font-sans text-sm tracking-[0.2em] animate-pulse z-20">
-           {(FAILURE_THRESHOLD_MS - inactivityTime) / 1000 < 2 ? "FADING..." : "KEEP WRITING"}
         </div>
       )}
     </div>
