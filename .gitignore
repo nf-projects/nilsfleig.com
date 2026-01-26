@@ -36,3 +36,9 @@ yarn-error.log*
 .vercel
 .vscode
 .env*.local
+
+# vocab files
+VOCAB_IMPLEMENTATION_PLAN.md
+VOCAB_PLAN.md
+vocab-session.log
+vocab-data/
