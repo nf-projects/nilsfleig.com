@@ -175,12 +175,6 @@ export default function Page() {
 									website: "github.com/nf-projects/neurotech_ml",
 								},
 								{
-									title: "Simple Prompt Tools Extension",
-									description: "My custom workflow for development with LLMs",
-									slug: "simple-prompt-tools",
-									technologies: ["Workflow", "VSCode Extension"],
-								},
-								{
 									title: "Blocklands.org",
 									description: "Skyblock Minecraft Server",
 									slug: "blocklands",
@@ -204,11 +198,6 @@ export default function Page() {
 								slug: "self-host-mcmetrics",
 								date: "February 1, 2024",
 							},
-							// {
-							// 	title: "Simple Prompt Tools: My AI Development Workflow",
-							// 	slug: "ai-development-workflow",
-							// 	date: "February 5, 2024",
-							// },
 							{
 								title:
 									"Using Sentence Transformer Centroids to Detect Message Topics",
