@@ -92,19 +92,35 @@ export default function Page() {
 					<section id="currently" className="space-y-4">
 						<h2 className="text-2xl font-mono text-zinc-500">CURRENTLY</h2>
 
-						<div className="space-y-1">
-							<h3 className="text-3xl font-mono">Founder</h3>
-							<Link
-								href="https://mcmetrics.net"
-								className="flex items-center gap-2 hover:text-primary transition-colors"
-							>
-								<div className="w-6 h-6 bg-zinc-800"></div>
-								<span className="font-mono">mcmetrics.net</span>
-							</Link>
-							<p className="font-mono text-zinc-500">Nov 2022 - Present</p>
-						</div>
-
 						<div className="space-y-12">
+							<div className="space-y-1">
+								<h3 className="text-3xl font-mono">
+									Club Founder / President
+								</h3>
+								<Link
+									href="https://davisautonomy.com"
+									className="flex items-center gap-2 hover:text-primary transition-colors"
+								>
+									<div className="w-6 h-6 bg-zinc-800"></div>
+									<span className="font-mono">Davis Autonomy Club</span>
+								</Link>
+								<p className="font-mono text-zinc-500">
+									September 2025 - Present
+								</p>
+							</div>
+
+							<div className="space-y-1">
+								<h3 className="text-3xl font-mono">Founder</h3>
+								<Link
+									href="https://mcmetrics.net"
+									className="flex items-center gap-2 hover:text-primary transition-colors"
+								>
+									<div className="w-6 h-6 bg-zinc-800"></div>
+									<span className="font-mono">mcmetrics.net</span>
+								</Link>
+								<p className="font-mono text-zinc-500">Nov 2022 - Present</p>
+							</div>
+
 							<div className="space-y-1">
 								<h3 className="text-3xl font-mono">Software Engineering</h3>
 								<Link
