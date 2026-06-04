@@ -14,7 +14,7 @@ export default function Page() {
 						Hi, I'm Nils 👋
 					</p>
 					<p className="text-zinc-400 leading-relaxed max-w-2xl">
-						I'm a freshman at UC Davis studying Computer Science. I'm from the
+						I'm a sophomore at UC Davis studying Computer Science. I'm from the
 						Bay Area and like building software projects in my free time.
 					</p>
 					<p className="text-zinc-400 leading-relaxed max-w-2xl">
@@ -83,7 +83,7 @@ export default function Page() {
 						</li>
 					</ul>
 					<p className="mt-6 text-zinc-400 leading-relaxed max-w-2xl">
-						Site last updated: May 2025
+						Site last updated: June 2026
 					</p>
 				</section>
 
