@@ -32,6 +32,22 @@ export default function MCMetricsPage() {
 					mcmetrics.net
 				</Link>
 				<p className="text-zinc-300 leading-relaxed font-mono mt-6">
+					[Update Jan 2026: MCMetrics has been acquired by a gaming services
+					company in the U.K.]
+				</p>
+				<p className="text-zinc-300 leading-relaxed font-mono mt-6">
+					I won a $7500 award for MCMetrics at a{" "}
+					<Link
+						href="https://engineering.ucdavis.edu/news/student-startup-teams-pitch-bold-new-ideas-plasma-demo-day"
+						className="text-zinc-400 hover:text-white underline"
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						UC Davis startup competition
+					</Link>{" "}
+					in May 2025. I was the only freshman and the only solo team.
+				</p>
+				<p className="text-zinc-300 leading-relaxed font-mono mt-6">
 					"Google Analytics for Minecraft servers"
 				</p>
 				<p className="text-zinc-300 leading-relaxed font-mono mt-6">
