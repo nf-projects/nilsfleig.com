@@ -35,7 +35,7 @@ Dana has signed in to three services in the browser on this computer. Use them
 the way she would. The sessions are already open — if one asks you to sign in,
 stop and ask Dana to do it. Never ask her for a password and never type one.
 
-  Linkfield   https://nilsfleig.com/demo/linkfield
+  Linkfield   https://www.nilsfleig.com/demo/linkfield
               The professional network. People search with title and industry
               filters at /demo/linkfield/search, one profile per person at
               /demo/linkfield/in/<slug> carrying their about text, experience,
@@ -43,7 +43,7 @@ stop and ask Dana to do it. Never ask her for a password and never type one.
               feed at /demo/linkfield, and Dana's own connections at
               /demo/linkfield/network — including a CSV export of them.
 
-  Kiln        https://nilsfleig.com/demo/kiln
+  Kiln        https://www.nilsfleig.com/demo/kiln
               The list-building tool. One table of companies with filters for
               industry, employee count and whether the company has an in-house
               design team. Tick "Run enrichment" to add the design-team size,
@@ -51,7 +51,7 @@ stop and ask Dana to do it. Never ask her for a password and never type one.
               signals. "Export CSV" downloads exactly the rows on screen, and
               every filter is in the URL, so a filtered view is a link.
 
-  Mailroom    https://nilsfleig.com/demo/mailroom
+  Mailroom    https://www.nilsfleig.com/demo/mailroom
               The mailbox. Inbox, Sent, Drafts, and a Compose screen that
               accepts ?to=, ?subject= and ?body= in the URL. Sent mail is worth
               reading before you write anything: the two threads that got a
