@@ -5,13 +5,26 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-// The site's root layout wraps everything in a narrow dark column with a header
-// and footer. These pages are full-bleed application mocks, so the chrome is
-// switched off here — server-rendered, so there is no flash of the wrong shell.
-const killSiteChrome = `
-  body { background: #fff; color: #111; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; }
-  body > div { max-width: none; padding: 0; margin: 0; }
-  body > div > header, body > div > footer { display: none; }
+// The site's root layout is a dark, monospaced, max-width column with a header
+// and a footer. Hiding those with a cascade override proved unreliable, so the
+// demo takes the whole viewport instead: one fixed, scrolling, light surface
+// that owes nothing to what is painted underneath it.
+//
+// The scoped rules below exist because form controls inherit the dark theme's
+// colours otherwise — which is how a typed value ends up light grey on white.
+const demoStyles = `
+  .demo-root { color-scheme: light; }
+  .demo-root input,
+  .demo-root select,
+  .demo-root textarea {
+    color: #111827;
+    background-color: #fff;
+    font: inherit;
+  }
+  .demo-root input::placeholder,
+  .demo-root textarea::placeholder { color: #9ca3af; }
+  .demo-root a { text-decoration: none; }
+  .demo-root ::selection { background: #b4d5fe; }
 `;
 
 export default function DemoLayout({
@@ -22,8 +35,16 @@ export default function DemoLayout({
   return (
     <>
       {/* eslint-disable-next-line react/no-danger */}
-      <style dangerouslySetInnerHTML={{ __html: killSiteChrome }} />
-      {children}
+      <style dangerouslySetInnerHTML={{ __html: demoStyles }} />
+      <div
+        className="demo-root fixed inset-0 z-[9999] overflow-y-auto bg-white text-neutral-900"
+        style={{
+          fontFamily:
+            'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+        }}
+      >
+        {children}
+      </div>
     </>
   );
 }

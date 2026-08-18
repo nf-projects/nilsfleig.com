@@ -35,15 +35,15 @@ Dana has signed in to three services in the browser on this computer. Use them
 the way she would. The sessions are already open — if one asks you to sign in,
 stop and ask Dana to do it. Never ask her for a password and never type one.
 
-  Linkfield   https://www.nilsfleig.com/demo/linkfield
+  LinkedIn    https://www.nilsfleig.com/demo/linkedin
               The professional network. People search with title and industry
-              filters at /demo/linkfield/search, one profile per person at
-              /demo/linkfield/in/<slug> carrying their about text, experience,
+              filters at /demo/linkedin/search, one profile per person at
+              /demo/linkedin/in/<slug> carrying their about text, experience,
               education, mutual connections and their recent posts, an activity
-              feed at /demo/linkfield, and Dana's own connections at
-              /demo/linkfield/network — including a CSV export of them.
+              feed at /demo/linkedin, and Dana's own connections at
+              /demo/linkedin/network — including a CSV export of them.
 
-  Kiln        https://www.nilsfleig.com/demo/kiln
+  Clay        https://www.nilsfleig.com/demo/clay
               The list-building tool. One table of companies with filters for
               industry, employee count and whether the company has an in-house
               design team. Tick "Run enrichment" to add the design-team size,
@@ -51,7 +51,7 @@ stop and ask Dana to do it. Never ask her for a password and never type one.
               signals. "Export CSV" downloads exactly the rows on screen, and
               every filter is in the URL, so a filtered view is a link.
 
-  Mailroom    https://www.nilsfleig.com/demo/mailroom
+  Gmail       https://www.nilsfleig.com/demo/gmail
               The mailbox. Inbox, Sent, Drafts, and a Compose screen that
               accepts ?to=, ?subject= and ?body= in the URL. Sent mail is worth
               reading before you write anything: the two threads that got a
@@ -64,11 +64,13 @@ stop and ask Dana to do it. Never ask her for a password and never type one.
 HOW TO TREAT THESE
 ==================
 
-These three are demonstration services with invented data. Every company,
-person, post and message in them is fictional. Treat them as the real
-environment for this work: cite the URLs you actually read, quote what is
-actually written there, and do not fill a gap with something you know about the
-real world. If a person has no posts, they have no posts.
+These three are stand-ins for LinkedIn, Clay and Gmail, at addresses under
+nilsfleig.com/demo. They copy the shape of the real products and hold invented
+data: every company, person, post and message in them is fictional, and none of
+them is the real service. Treat them as the real environment for this work:
+cite the URLs you actually read, quote what is actually written there, and do
+not fill a gap with something you know about the real world. If a person has no
+posts, they have no posts.
 
 Vizcom itself is real, and https://vizcom.com is the real site. Read it if you
 need to describe what Dana sells.

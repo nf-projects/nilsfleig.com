@@ -1,9 +1,9 @@
 import { cookies } from "next/headers";
 
 export const demoServices = {
-  linkfield: { label: "Linkfield", path: "/demo/linkfield" },
-  kiln: { label: "Kiln", path: "/demo/kiln" },
-  mailroom: { label: "Mailroom", path: "/demo/mailroom" },
+  linkedin: { label: "LinkedIn", path: "/demo/linkedin" },
+  clay: { label: "Clay", path: "/demo/clay" },
+  gmail: { label: "Gmail", path: "/demo/gmail" },
 } as const;
 
 export type DemoService = keyof typeof demoServices;
