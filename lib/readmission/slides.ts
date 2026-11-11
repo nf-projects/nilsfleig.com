@@ -27,7 +27,7 @@ export const slides: Slide[] = [
   },
   {
     "title": "We tuned three models and tested once on held-out patients",
-    "notes": "Nils: We hold out 20 percent of patients as a test set and use it one time at the end. We tune with random search, grouped by patient. For missing values we made all of a missing category's one hot columns NaN. If theyre just zeros, XGBoost never sees a missing value at all. Class weights didnt help any model's PR-AUC, so we handle imbalance by choosing the threshold instead.",
+    "notes": "Nils: We hold out 20 percent of patients as a test set and use it one time at the end. We tune with random search, grouped by patient. For missing values we made all of a missing category's one hot columns NaN. If theyre just zeros, XGBoost never sees a missing value at all.",
     "image": "/171/slide-05.png",
     "demo": false
   },
@@ -45,7 +45,7 @@ export const slides: Slide[] = [
   },
   {
     "title": "Prior visits and discharge destination drive the model, and it's a ranking tool",
-    "notes": "Alex: The top features are prior inpatient visits and discharge destination. At the best F1 threshold we flag 26 percent of encounters and catch about half of readmissions. So about 1 in 5 flags is correct. If staff could only follow up with the top 5 percent, 38 percent of those are real, about 3.3 times the base rate. So it's most useful for ordering a follow up list.",
+    "notes": "Alex: Readmissions are rare, so I tested class weights for all three models. They didnt improve PR-AUC for any of them, so we handle the imbalance by choosing the threshold instead, the one with the best F1. The top features are prior inpatient visits and discharge destination. At that threshold we flag 26 percent of encounters and catch about half of readmissions. So about 1 in 5 flags is correct. If staff could only follow up with the top 5 percent, 38 percent of those are real, about 3.3 times the base rate. So it's most useful for ordering a follow up list.",
     "image": "/171/slide-08.png",
     "demo": false
   },
