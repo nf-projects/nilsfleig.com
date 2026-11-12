@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { explain, prob, sigmoid, treePath, type ModelData } from "@/lib/readmission/model";
-import gains from "@/lib/readmission/gains.json";
+import { explain, prob, sigmoid, type ModelData } from "@/lib/readmission/model";
 
 const C = {
   ink: "#17212b", mut: "#5b6773", faint: "#8a949e", acc: "#1f4e79", accSoft: "#e8eff6",
@@ -136,111 +135,6 @@ function WhatIf({ m, form }: { m: ModelData; form: Form }) {
   );
 }
 
-/* ---------- gains curve on the real test set ---------- */
-const MODELS: [string, string][] = [["XGBoost", C.acc], ["Random forest", C.orange], ["Logistic regression", "#8a6fb0"]];
-function Gains() {
-  const [k, setK] = useState(10); // index into 0..200 (0.5% steps)
-  const g = gains as { n: number; pos: number; models: Record<string, number[]> };
-  const W = 620, H = 300, L = 46, R = 596, T = 10, B = 262;
-  const x = (f: number) => L + f * (R - L);
-  const y = (f: number) => B - f * (B - T);
-  const frac = k / 200;
-  const called = Math.round(frac * g.n);
-  return (
-    <div>
-      <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
-        {[0, 0.2, 0.4, 0.6, 0.8, 1].map((t) => (
-          <g key={t}>
-            <line x1={L} x2={R} y1={y(t)} y2={y(t)} stroke={C.line} /><line x1={x(t)} x2={x(t)} y1={T} y2={B} stroke={C.line} />
-            <text x={L - 8} y={y(t) + 4} textAnchor="end" fontSize={11} fill={C.mut}>{pct(t, 0)}</text>
-            <text x={x(t)} y={B + 17} textAnchor="middle" fontSize={11} fill={C.mut}>{pct(t, 0)}</text>
-          </g>
-        ))}
-        <text x={(L + R) / 2} y={H - 4} textAnchor="middle" fontSize={11.5} fill={C.mut}>fraction of patients contacted (sorted by predicted risk)</text>
-        <text x={14} y={(T + B) / 2} textAnchor="middle" fontSize={11.5} fill={C.mut} transform={`rotate(-90 14 ${(T + B) / 2})`}>recall</text>
-        <line x1={x(0)} y1={y(0)} x2={x(1)} y2={y(1)} stroke={C.faint} strokeDasharray="5 4" />
-        <text x={x(0.62)} y={y(0.55)} fontSize={11} fill={C.faint} transform={`rotate(-29 ${x(0.62)} ${y(0.55)})`}>random</text>
-        {MODELS.slice().reverse().map(([name, col]) => (
-          <path key={name} d={g.models[name].map((c, i) => `${i ? "L" : "M"}${x(i / 200)} ${y(c / g.pos)}`).join(" ")} fill="none" stroke={col} strokeWidth={name === "XGBoost" ? 3 : 2} />
-        ))}
-        
-        <line x1={x(frac)} x2={x(frac)} y1={T} y2={B} stroke={C.ink} strokeWidth={1.5} />
-        {MODELS.map(([name, col]) => <circle key={name} cx={x(frac)} cy={y(g.models[name][k] / g.pos)} r={5} fill={col} stroke="white" strokeWidth={1.5} />)}
-      </svg>
-      <div>
-        <label className="flex items-center gap-3 font-mono text-[12px]" style={{ color: C.ink }}>
-          <span className="shrink-0">top {pct(frac, 1)} (n={called.toLocaleString()})</span>
-          <input type="range" min={1} max={100} value={k} onChange={(e) => setK(Number(e.target.value))} className="w-full accent-[#1f4e79]" />
-        </label>
-        <table className="mt-2 w-full border-collapse font-mono text-[12px]">
-          <thead><tr className="text-left" style={{ color: C.mut }}><th className="pb-1 font-normal">model</th><th className="pb-1 text-right font-normal">recall</th><th className="pb-1 text-right font-normal">precision</th><th className="pb-1 text-right font-normal">lift</th></tr></thead>
-          <tbody>
-            {MODELS.map(([name, col]) => {
-              const c = g.models[name][k];
-              const prec = called ? c / called : 0;
-              return (
-                <tr key={name} style={{ borderTop: `1px solid ${C.line}` }}>
-                  <td className="py-1" style={{ color: col }}>■ {name}</td>
-                  <td className="py-1 text-right tabular-nums">{(c / g.pos).toFixed(3)}</td>
-                  <td className="py-1 text-right tabular-nums">{prec.toFixed(3)}</td>
-                  <td className="py-1 text-right tabular-nums">{(prec / (g.pos / g.n)).toFixed(2)}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
-
-/* ---------- one tree, with missing values ---------- */
-function TreeWalk({ m, form }: { m: ModelData; form: Form }) {
-  const firstWithMissing = useMemo(() => {
-    for (let t = 0; t < m.trees.length; t++) if (treePath(m, t, form).steps.some((s) => s.missing && s.feature.startsWith("a1c"))) return t;
-    for (let t = 0; t < m.trees.length; t++) if (treePath(m, t, form).steps.some((s) => s.missing)) return t;
-    return 0;
-  }, [m, form]);
-  const [t, setT] = useState<number | null>(null);
-  const ti = t ?? firstWithMissing;
-  const path = useMemo(() => treePath(m, ti, form), [m, ti, form]);
-  const filled = useMemo(() => (form.a1c_ord === "" ? prob(m, { ...form, a1c_ord: "0" }) : null), [m, form]);
-  const asIs = useMemo(() => prob(m, form), [m, form]);
-  return (
-    <div>
-      <div className="flex items-center gap-2 font-mono text-[12px]" style={{ color: C.mut }}>
-        <button onClick={() => setT(Math.max(0, ti - 1))} className="border px-1.5" style={{ borderColor: "#d0d5db" }}>‹</button>
-        <span className="tabular-nums">tree {ti}/{m.trees.length - 1}</span>
-        <button onClick={() => setT(Math.min(m.trees.length - 1, ti + 1))} className="border px-1.5" style={{ borderColor: "#d0d5db" }}>›</button>
-        <button onClick={() => setT(null)} className="ml-2 underline">first tree splitting on a1c_ord</button>
-      </div>
-      <ol className="m-0 mt-2 list-none space-y-0.5 p-0">
-        {path.steps.map((s, i) => (
-          <li key={i} className="flex items-start gap-2 border-l-2 px-2 py-1 font-mono text-[12px] leading-5" style={{ background: s.missing ? C.redSoft : "transparent", borderColor: s.missing ? C.red : C.line }}>
-            <span className="w-5 shrink-0 text-right tabular-nums" style={{ color: C.faint }}>{s.node}</span>
-            <span className="flex-1 whitespace-pre-wrap">
-              <span style={{ color: C.ink }}>{s.feature} &lt; {+s.threshold.toFixed(3)}</span>{"  "}
-              {s.missing ? (
-                <span style={{ color: C.red }}>x = NaN → default {s.defaultLeft ? "left (yes)" : "right (no)"}</span>
-              ) : (
-                <span style={{ color: C.mut }}>x = {+s.value.toFixed(3)} → {s.left ? "left (yes)" : "right (no)"}</span>
-              )}
-            </span>
-          </li>
-        ))}
-        <li className="flex gap-2 border-l-2 px-2 py-1 font-mono text-[12px]" style={{ borderColor: C.acc, color: C.acc }}>
-          <span className="w-5 shrink-0" /><span>leaf = {path.leaf >= 0 ? "+" : ""}{path.leaf.toFixed(4)} (log-odds; prediction = sum over {m.trees.length} trees)</span>
-        </li>
-      </ol>
-      {filled !== null && (
-        <div className="mt-3 border-t pt-2 font-mono text-[12px]" style={{ borderColor: C.line, color: C.mut }}>
-          a1c_ord = NaN: <b style={{ color: C.ink }}>{pct(asIs)}</b>   vs   imputed as normal (0): <b style={{ color: C.ink }}>{pct(filled)}</b>
-        </div>
-      )}
-    </div>
-  );
-}
-
 /* ---------- page ---------- */
 const field = "mt-0.5 block w-full border bg-white px-1.5 py-1 font-mono text-[13px] outline-none focus:border-[#1f4e79]";
 export default function Lab(): JSX.Element {
@@ -265,7 +159,7 @@ export default function Lab(): JSX.Element {
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto font-sans" style={{ background: "#f0f2f4", color: C.ink }}>
       <main className="mx-auto grid max-w-[1500px] grid-cols-[280px_1fr_1fr] gap-3 p-3">
-        <div className="row-span-2 space-y-3">
+        <div className="space-y-3">
           <Card title="input">
             <div className="grid grid-cols-1 gap-y-1.5">
               {sel("age_mid", "age", AGES)}
@@ -300,12 +194,6 @@ export default function Lab(): JSX.Element {
             </Card>
             <Card title="sensitivity: one input at a time" sub="this patient">
               <WhatIf m={m} form={form} />
-            </Card>
-            <Card title="decision path" sub="red: missing value, learned default direction">
-              <TreeWalk m={m} form={form} />
-            </Card>
-            <Card title="cumulative gains, held-out test set" sub={`n=${(gains as { n: number }).n.toLocaleString()}, ${(gains as { pos: number }).pos.toLocaleString()} readmitted`}>
-              <Gains />
             </Card>
           </>
         ) : (

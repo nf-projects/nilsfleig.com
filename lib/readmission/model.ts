@@ -250,21 +250,3 @@ export function explain(m: ModelData, form: Record<string, Value>): Explanation 
 export function prob(m: ModelData, form: Record<string, Value>): number {
   return sigmoid(margin(m, encode(m, rowFrom(m, form))));
 }
-
-export type PathStep = { node: number; feature: string; threshold: number; value: number; missing: boolean; left: boolean; defaultLeft: boolean };
-
-/** The route one patient takes through tree t, and the leaf value it ends on. */
-export function treePath(m: ModelData, t: number, form: Record<string, Value>): { steps: PathStep[]; leaf: number } {
-  const tree = m.trees[t];
-  const x = encode(m, rowFrom(m, form));
-  const steps: PathStep[] = [];
-  let n = 0;
-  while (tree.l[n] !== -1) {
-    const v = x[tree.f[n]];
-    const missing = Number.isNaN(v);
-    const next = hotChild(tree, n, x);
-    steps.push({ node: n, feature: m.names[tree.f[n]], threshold: tree.c[n], value: v, missing, left: next === tree.l[n], defaultLeft: !!tree.d[n] });
-    n = next;
-  }
-  return { steps, leaf: tree.c[n] };
-}
