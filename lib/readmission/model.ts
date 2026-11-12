@@ -216,3 +216,55 @@ export function predict(m: ModelData, form: Record<string, Value>): Prediction {
     .map(([k, v]) => ({ name: NICE[k] ?? k, effect: v }));
   return { probability, threshold: m.threshold, base_rate: m.base_rate, flagged: probability >= m.threshold, factors };
 }
+
+export type Explanation = {
+  probability: number;
+  /** Model output for an average patient (the TreeSHAP expected value), as a probability. */
+  start: number;
+  startMargin: number;
+  /** Per input column, its push in log-odds. Sums to margin - startMargin. */
+  steps: { key: string; name: string; phi: number; onForm: boolean }[];
+};
+
+export const sigmoid = (z: number) => 1 / (1 + Math.exp(-z));
+export const niceName = (k: string) => NICE[k] ?? k;
+export const isFormField = (k: string) => FORM_FIELDS.has(k);
+
+/** Full TreeSHAP breakdown of one prediction, grouped by input column. */
+export function explain(m: ModelData, form: Record<string, Value>): Explanation {
+  const x = encode(m, rowFrom(m, form));
+  const z = margin(m, x);
+  const phi = contributions(m, x);
+  const total = new Map<string, number>();
+  m.names.forEach((n, i) => {
+    const col = n.split("=")[0];
+    total.set(col, (total.get(col) ?? 0) + phi[i]);
+  });
+  const sum = Array.from(total.values()).reduce((a, b) => a + b, 0);
+  const startMargin = z - sum;
+  const steps = Array.from(total.entries()).map(([key, v]) => ({ key, name: niceName(key), phi: v, onForm: FORM_FIELDS.has(key) }));
+  return { probability: sigmoid(z), start: sigmoid(startMargin), startMargin, steps };
+}
+
+/** Probability only, for sweeps. */
+export function prob(m: ModelData, form: Record<string, Value>): number {
+  return sigmoid(margin(m, encode(m, rowFrom(m, form))));
+}
+
+export type PathStep = { node: number; feature: string; threshold: number; value: number; missing: boolean; left: boolean; defaultLeft: boolean };
+
+/** The route one patient takes through tree t, and the leaf value it ends on. */
+export function treePath(m: ModelData, t: number, form: Record<string, Value>): { steps: PathStep[]; leaf: number } {
+  const tree = m.trees[t];
+  const x = encode(m, rowFrom(m, form));
+  const steps: PathStep[] = [];
+  let n = 0;
+  while (tree.l[n] !== -1) {
+    const v = x[tree.f[n]];
+    const missing = Number.isNaN(v);
+    const next = hotChild(tree, n, x);
+    steps.push({ node: n, feature: m.names[tree.f[n]], threshold: tree.c[n], value: v, missing, left: next === tree.l[n], defaultLeft: !!tree.d[n] });
+    n = next;
+  }
+  return { steps, leaf: tree.c[n] };
+}
