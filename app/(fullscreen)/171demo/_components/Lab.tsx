@@ -264,12 +264,6 @@ export default function Lab(): JSX.Element {
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto font-sans" style={{ background: "#f0f2f4", color: C.ink }}>
-      <header className="border-b bg-white px-4 py-2" style={{ borderColor: "#d0d5db" }}>
-        <div className="mx-auto flex max-w-[1500px] items-baseline justify-between font-mono">
-          <div><span className="text-[15px] font-semibold">ECS 171 Group 15: 30-day readmission</span><span className="ml-3 text-[12px]" style={{ color: C.mut }}>xgboost · 400 trees · 184 features · UCI Diabetes 130-US Hospitals</span></div>
-          <span className="text-[11.5px]" style={{ color: C.faint }}>class project, not for clinical use</span>
-        </div>
-      </header>
       <main className="mx-auto grid max-w-[1500px] grid-cols-[280px_1fr_1fr] gap-3 p-3">
         <div className="row-span-2 space-y-3">
           <Card title="input">
