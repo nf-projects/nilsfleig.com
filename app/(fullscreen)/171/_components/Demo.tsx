@@ -132,7 +132,6 @@ export default function Demo({ model }: { model: ModelData | null }): JSX.Elemen
       <p className="absolute bottom-[2.2cqw] left-[4.5cqw] m-0 text-[1cqw] text-[#5b6773]">
         Class project only, not for clinical use. Data is from 1999-2008. Fields not on this form use typical values or are left missing.
       </p>
-      <p className="absolute bottom-[2.2cqw] right-[4.5cqw] m-0 text-[1cqw] text-[#5b6773]">Alex</p>
     </div>
   );
 }
