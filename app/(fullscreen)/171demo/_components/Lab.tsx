@@ -158,7 +158,7 @@ export default function Lab(): JSX.Element {
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto font-sans" style={{ background: "#f0f2f4", color: C.ink }}>
-      <main className="mx-auto grid max-w-[1500px] grid-cols-[280px_1fr_1fr] gap-3 p-3">
+      <main className="mx-auto grid max-w-[1500px] grid-cols-[280px_1fr_1fr] items-start gap-3 p-3">
         <div className="space-y-3">
           <Card title="input">
             <div className="grid grid-cols-1 gap-y-1.5">
