@@ -57,7 +57,7 @@ function Notes({ pos, big = false }: { pos: Pos; big?: boolean }) {
         {s.steps > 0 && <span> · click {pos.step} of {s.steps}</span>}
       </div>
       {s.notes.map((t, k) => (
-        <p key={k} ref={k === pos.step ? cur : undefined} className={`m-0 mb-2 ${k === pos.step ? "text-white" : k < pos.step ? "text-zinc-500" : "text-zinc-600"}`}>
+        <p key={k} ref={k === pos.step ? cur : undefined} className={`m-0 mb-2 ${k === pos.step || s.demo ? "text-white" : k < pos.step ? "text-zinc-500" : "text-zinc-600"}`}>
           {t}
         </p>
       ))}

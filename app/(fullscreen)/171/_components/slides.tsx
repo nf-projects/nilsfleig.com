@@ -9,10 +9,11 @@ import { Answer, C, Frame, G, Point, R, Stat, useStep } from "./kit";
 
 export type SlideDef = {
   title: string;
-  speaker: "Nils" | "Alex";
+  speaker: "Nils" | "Alex" | "Alex, then Nils";
   /** Number of clicks after the slide first appears. */
   steps: number;
-  /** What to say at each build step: notes[0] when the slide appears, notes[k] after click k. */
+  /** What to say at each build step: notes[0] when the slide appears, notes[k] after click k.
+   * The demo slide has no builds; its notes are the steps of the demo. */
   notes: string[];
   /** Short facts for Q&A, not read out. */
   ask?: string[];
@@ -160,7 +161,7 @@ function Strategies() {
         <tr className="text-left text-[1.3cqw]" style={{ color: C.mut }}>
           <th className="pb-[0.6cqw] font-semibold">Strategy</th>
           <th className="pb-[0.6cqw] text-right font-semibold">CV PR-AUC</th>
-          <th className="pb-[0.6cqw] text-right font-semibold">Prep / fold</th>
+          <th className="pb-[0.6cqw] text-right font-semibold">Prep time</th>
         </tr>
       </thead>
       <tbody>
@@ -208,7 +209,6 @@ function Masking() {
 }
 
 function Drivers() {
-  const step = useStep();
   const data: [string, number][] = [
     ["Hospital stays, past year", 0.3072], ["Where they go after discharge", 0.2217], ["Primary diagnosis", 0.0779],
     ["Insurance / payer", 0.0721], ["Number of diagnoses", 0.0565], ["Doctor specialty", 0.0505],
@@ -220,10 +220,10 @@ function Drivers() {
         const yy = 6 + i * row;
         const w = (v / max) * (W - L - 90);
         const top2 = i < 2;
-        const fill = step >= 1 ? (top2 ? C.acc : C.barDim) : C.bar;
+        const fill = top2 ? C.acc : C.barDim;
         return (
           <g key={k}>
-            <text x={L - 18} y={yy + 37} textAnchor="end" fontSize={27} fill={C.ink} fontWeight={step >= 1 && top2 ? 700 : 400}>{k}</text>
+            <text x={L - 18} y={yy + 37} textAnchor="end" fontSize={27} fill={C.ink} fontWeight={top2 ? 700 : 400}>{k}</text>
             <rect x={L} y={yy + 10} width={w} height={38} rx={4} fill={fill} style={{ transition: "fill 400ms" }} />
           </g>
         );
@@ -279,7 +279,7 @@ export const SLIDES: SlideDef[] = [
     speaker: "Nils",
     steps: 0,
     notes: [
-      "Hi, we're Group 15. I'm Nils, and this is Alex. Our assigned paper was XGBoost, by Chen and Guestrin. We used XGBoost to predict which diabetic patients come back to the hospital within 30 days of going home.",
+      "We're Group 15, Nils and Alex. Our assigned paper is XGBoost, and we used it to predict which diabetic patients come back to the hospital within 30 days.",
     ],
     render: () => (
       <div className="absolute inset-0 flex flex-col justify-between bg-white px-[6cqw] py-[5.5cqw]" style={{ color: C.ink }}>
@@ -302,9 +302,9 @@ export const SLIDES: SlideDef[] = [
     speaker: "Nils",
     steps: 2,
     notes: [
-      "In our data, about one in nine diabetic patients is back in the hospital within 30 days of being discharged.",
-      "[click] That's expensive, and Medicare cuts payments to hospitals that have too many of these readmissions.",
-      "[click] But a hospital can't give extra follow-up to everyone. So the goal is a risk score at discharge, telling staff who to call first.",
+      "About 1 in 9 diabetic patients is back in the hospital within 30 days.",
+      "[click] That's costly, because Medicare cuts payments to hospitals with too many readmissions.",
+      "[click] Our goal is a risk score at discharge, so staff know who to follow up with first.",
     ],
     render: ({ n }) => (
       <Frame n={n} kicker="The problem" title={<>About <span style={{ color: C.red }}>1 in 9</span> diabetic patients is back in the hospital within 30 days</>}>
@@ -323,9 +323,9 @@ export const SLIDES: SlideDef[] = [
     speaker: "Nils",
     steps: 2,
     notes: [
-      "XGBoost is a boosted tree model. It builds decision trees one after another, and each new tree fixes the mistakes of the trees before it.",
-      "[click] It adds regularization, a penalty on big, complicated trees, so it doesn't overfit.",
-      "[click] And the part our project is about: it handles missing values itself. At every split it learns which side missing values should go to. You don't have to fill them in first.",
+      "XGBoost builds many small decision trees in sequence, each fixing the mistakes of the ones before it.",
+      "[click] It adds a penalty on complex trees to avoid overfitting.",
+      "[click] And it has a built-in way to handle missing values: at every split it learns which direction missing values should go. That third idea is our focus.",
     ],
     ask: ["The paper's main focus is speed at scale: quantile sketches, cache-aware access, out-of-core training. Those matter on billions of rows, less on our 100k."],
     render: ({ n }) => {
@@ -360,9 +360,9 @@ export const SLIDES: SlideDef[] = [
     speaker: "Nils",
     steps: 2,
     notes: [
-      "The paper shows that built-in missing value handling makes training faster. It doesn't really test whether it makes predictions better. That's the gap we looked at.",
-      "[click] So our first question: does XGBoost actually beat simpler models, logistic regression and random forest, on real hospital data?",
-      "[click] And second: does its built-in missing value handling do better than the usual approach of filling in the missing values first? Alex will now walk you through the data.",
+      "The paper shows this is faster. We asked whether it's also more accurate. Two questions:",
+      "[click] One, does XGBoost beat logistic regression and random forest?",
+      "[click] Two, does its built-in missing-value handling beat filling in values first?",
     ],
     render: ({ n }) => (
       <Frame n={n} kicker="What we tested" title="The paper says it's faster. Is it also more accurate?">
@@ -387,9 +387,9 @@ export const SLIDES: SlideDef[] = [
     speaker: "Alex",
     steps: 2,
     notes: [
-      "We used the UCI Diabetes 130-US Hospitals dataset. That's about 99 thousand hospital visits from about 70 thousand patients, at 130 US hospitals, between 1999 and 2008. We removed about 2,400 visits where the patient died or went to hospice, since they can't be readmitted.",
-      "[click] Only 11.4 percent of visits end in a readmission within 30 days.",
-      "[click] That means a model that always says 'no' is 89 percent accurate and completely useless. So instead of accuracy we use PR-AUC, which only rewards finding the rare readmissions.",
+      "Our data is about 99,000 hospital visits from 70,000 diabetic patients at 130 US hospitals. We removed visits that ended in death or hospice, since those patients can't come back.",
+      "[click] Only 11.4% are readmitted,",
+      "[click] so accuracy is useless: always guessing 'no' is 89% accurate. We use PR-AUC, which rewards finding the rare readmissions. Random guessing scores 0.114.",
     ],
     ask: ["PR-AUC: area under the precision-recall curve. A random guess scores the base rate, 0.114."],
     render: ({ n }) => (
@@ -409,7 +409,7 @@ export const SLIDES: SlideDef[] = [
             <div className="mt-[0.8cqw] text-[2cqw]"><span className="font-bold" style={{ color: C.red }}>11.4%</span> are readmitted within 30 days</div>
           </R>
           <R at={2} className="mt-[2.2cqw]">
-            <Point lead="So accuracy is useless:">always saying &ldquo;no&rdquo; is 89% accurate. We score models with <b>PR-AUC</b>, which rewards finding the rare readmissions.</Point>
+            <Point lead="So accuracy is useless:">always saying &ldquo;no&rdquo; is 89% accurate. We use <b>PR-AUC</b>, which rewards finding the rare readmissions. Random guessing scores 0.114.</Point>
           </R>
         </div>
       </Frame>
@@ -420,8 +420,8 @@ export const SLIDES: SlideDef[] = [
     speaker: "Alex",
     steps: 1,
     notes: [
-      "The strongest single signal is how many times the patient was in the hospital in the year before. Each bar is the readmission rate for that group. The dashed line is the average, 11.4 percent.",
-      "[click] With no prior stays it's about 9 percent. With five or more, it's 37 percent. That's four times higher.",
+      "The strongest signal is prior hospital stays.",
+      "[click] A patient with no stays in the past year has a 9% chance of coming back. With five or more it's 37%. That's four times the risk.",
     ],
     render: ({ n }) => (
       <Frame n={n} kicker="Data" title="Patients who were in the hospital before come back more">
@@ -440,9 +440,9 @@ export const SLIDES: SlideDef[] = [
     speaker: "Alex",
     steps: 2,
     notes: [
-      "A lot of the data is missing. Weight is missing 97 percent of the time. The A1C blood sugar test wasn't run for 83 percent of visits.",
-      "[click] But missing isn't random. When the A1C test was run, 9.9 percent were readmitted. When it wasn't run, 11.7 percent.",
-      "[click] So whether a doctor ordered a test is itself information. Keep that in mind, because it comes back in our second question.",
+      "Lots of data is missing. Weight is missing 97% of the time, and the A1C blood test wasn't run in 83% of visits.",
+      "[click] And missing can mean something: patients who didn't get the test were readmitted 11.7% of the time versus 9.9% for those who did.",
+      "[click] A test not being ordered is information. That's why the missing-value question matters.",
     ],
     render: ({ n }) => (
       <Frame n={n} kicker="Data" title="A lot is missing, and missing can mean something">
@@ -467,20 +467,20 @@ export const SLIDES: SlideDef[] = [
   },
   {
     title: "How we tested",
-    speaker: "Nils",
+    speaker: "Alex, then Nils",
     steps: 3,
     notes: [
-      "Here's how we tested. We compared three models: logistic regression, random forest and XGBoost.",
-      "[click] We held out 20 percent of patients as a test set. We split by patient, not by visit, because 16 thousand patients come back more than once, and we don't want the same person in training and testing.",
-      "[click] We tuned each model with random search on cross-validation, scoring by PR-AUC. The test set was used only once, at the very end.",
-      "[click] One detail matters for question 2. Normally a missing category turns into all zeros after one-hot encoding, so XGBoost never actually sees a missing value. We kept those as missing, so its built-in handling actually runs.",
+      "Alex: Many patients appear more than once, so we split train and test by patient. Otherwise the same person would be in both and the score would be inflated.",
+      "[click] Nils: We trained logistic regression, random forest and XGBoost,",
+      "[click] tuned each with cross-validation, and used the test set once.",
+      "[click] One detail: normal encoding turns a missing value into all zeros, which hides it. We keep it as missing so XGBoost's own handling actually runs.",
     ],
     ask: ["Tuning: random search, 3-fold cross-validation grouped by patient. The missing-value comparison used 5-fold, also grouped by patient."],
     render: ({ n }) => {
       const steps: [string, string][] = [
-        ["3 models", "Logistic regression, random forest, XGBoost"],
         ["Split by patient", "80% train, 20% test. 16,341 patients have repeat visits"],
-        ["Tune, then test once", "Random search on cross-validation, scored by PR-AUC"],
+        ["3 models", "Logistic regression, random forest, XGBoost"],
+        ["Tune, then test once", "Cross-validation, scored by PR-AUC. Test set used once"],
       ];
       return (
         <Frame n={n} kicker="Method" title="How we tested">
@@ -520,10 +520,10 @@ export const SLIDES: SlideDef[] = [
     speaker: "Nils",
     steps: 3,
     notes: [
-      "Question 1. These are the test scores. The gray dot is the baseline you'd get by guessing, 0.114. All three models do about twice as well. XGBoost has the top score, 0.262.",
-      "[click] Against logistic regression, XGBoost is ahead by 0.025, and the confidence interval on that gap is well above zero. That's a real difference.",
-      "[click] Against random forest the gap is only 0.005, and the interval includes zero. So on our main metric we can't say XGBoost beats random forest.",
-      "[click] So the answer: XGBoost is the best, but it only clearly beats logistic regression.",
+      "XGBoost scored 0.262, random forest 0.258, logistic regression 0.237, and random guessing 0.114.",
+      "[click] XGBoost clearly beats logistic regression.",
+      "[click] But against random forest the gap is within noise: the interval includes zero.",
+      "[click] So XGBoost is the best, but only clearly beats logistic regression.",
     ],
     ask: [
       "ROC-AUC: XGBoost 0.689, random forest 0.681, logistic regression 0.670. On ROC-AUC XGBoost does beat random forest (CI 0.004 to 0.013).",
@@ -549,9 +549,9 @@ export const SLIDES: SlideDef[] = [
     speaker: "Nils",
     steps: 2,
     notes: [
-      "Question 2. We tried four ways of dealing with missing values. XGBoost's built-in handling scored highest, about tied with treating missing as its own category, and slightly above filling values in. It beat the fill-in methods in four or five of the five folds. Filling from similar patients, KNN, cost 46 extra seconds per fold and gained nothing.",
-      "[click] Why does built-in handling win? We hid values completely at random, so that being missing means nothing. Then the edge disappears: the two lines sit on top of each other.",
-      "[click] So it isn't better at guessing hidden values. It wins because in real hospital data, missing values carry information, like a test not being ordered. That matches another health data benchmark, Perez-Lebel 2022. Back to Alex.",
+      "Built-in handling scored slightly higher than filling in values, and tied with treating missing as its own category. KNN filling took 46 seconds per run and gained nothing.",
+      "[click] To find out why, we hid values completely at random. The edge disappeared.",
+      "[click] So the built-in advantage exists because missing values carry real information, not because it recovers lost data.",
     ],
     ask: [
       "The gains are small: about 0.0025 PR-AUC over mode and KNN, with a fold-to-fold SD of about 0.0017.",
@@ -575,16 +575,15 @@ export const SLIDES: SlideDef[] = [
   {
     title: "What drives predictions",
     speaker: "Alex",
-    steps: 1,
+    steps: 0,
     notes: [
-      "So what does the model actually look at? These are the features with the biggest average effect on a prediction, measured with SHAP values on the test set.",
-      "[click] Two stand out: how many hospital stays the patient had in the past year, and where they go after discharge, for example home or a nursing facility. Everything else matters much less.",
+      "Using SHAP, the biggest drivers are the number of hospital stays in the past year and where the patient goes after discharge, far above anything else. This matches what we saw in the data.",
     ],
     render: ({ n }) => (
       <Frame n={n} kicker="Inside the model" title="What drives the predictions">
         <div className="flex h-full items-center gap-[3cqw]">
           <div className="w-[66%]"><Drivers /></div>
-          <R at={1} className="flex-1">
+          <R at={0} className="flex-1">
             <div className="text-[2.4cqw] font-bold leading-[1.25]" style={{ color: C.acc }}>Past stays and discharge destination</div>
             <div className="mt-[1cqw] text-[1.8cqw] leading-[1.35]" style={{ color: C.mut }}>matter far more than anything else</div>
           </R>
@@ -597,16 +596,16 @@ export const SLIDES: SlideDef[] = [
     speaker: "Alex",
     steps: 3,
     notes: [
-      "Readmissions are rare, so we tried class weights for all three models. They didn't improve PR-AUC for any of them. Instead, we handle the imbalance by choosing the cutoff with the best F1 score.",
-      "[click] At that cutoff we flag 26 percent of patients and catch about half of all readmissions. About 1 in 5 flagged patients is actually readmitted.",
-      "[click] If staff could only call the top 5 percent, 38 percent of those are real readmissions. That's 3.3 times the base rate.",
-      "[click] So it's most useful for ordering a follow-up list, not for yes-or-no decisions.",
+      "Because readmissions are rare, we choose a cutoff.",
+      "[click] At our cutoff we flag 26% of patients, catch 49% of readmissions, and about 1 in 5 flags is correct.",
+      "[click] If staff can only call the top 5%, 38% of those really come back, 3.3 times the normal rate.",
+      "[click] So it's best for ordering a follow-up list, not for yes/no decisions.",
     ],
+    ask: ["Class weights: we tried them for all three models and they didn't improve PR-AUC, so we handle the imbalance with the cutoff instead. The cutoff is the one with the best F1 score, 13.7%."],
     render: ({ n }) => (
       <Frame n={n} kicker="Using the model" title="Readmissions are rare, so we choose a cutoff">
         <div className="flex h-full flex-col">
-          <Point lead="Class weights didn't help.">We pick the cutoff with the best F1 score instead.</Point>
-          <div className="mt-[2.6cqw] grid grid-cols-2 gap-[2.4cqw]">
+          <div className="grid grid-cols-2 gap-[2.4cqw]">
             <R at={1}>
               <div className="h-full rounded-[1cqw] p-[2cqw]" style={{ background: "#f4f6f8" }}>
                 <div className="text-[1.5cqw] font-semibold" style={{ color: C.mut }}>At the cutoff: flag 26% of patients</div>
@@ -635,7 +634,12 @@ export const SLIDES: SlideDef[] = [
     steps: 0,
     demo: true,
     notes: [
-      "Here's the model running live, right in the browser. [Click 'Example: lower risk'.] A 55-year-old, two days in the hospital, going home: 3.7 percent, below the cutoff. [Click 'Example: higher risk'.] A 75-year-old with five prior stays, going to rehab: 25 percent, flagged. On the right you can see what pushed the prediction up or down. [Change 'Inpatient visits' from 5 to 0 and click Predict.] Same patient, no prior stays: it drops to about 17 percent. Now back to Nils. [Press Esc, then →.]",
+      "This runs the same trained model entirely in the browser.",
+      "[Click 'Example: lower risk'] A younger patient, short stay, no prior visits: low risk, below our follow-up threshold.",
+      "[Click 'Example: higher risk'] An older patient, long stay, five prior visits, sent to rehab: flagged for follow-up.",
+      "[Set 'Inpatient visits, past year' to 0, click Predict] Risk drops. Prior visits matter most. (25% to about 17%, still just above the 13.7% cutoff.)",
+      "[Point at 'What moved this prediction'] These are SHAP values, showing which inputs pushed the risk up or down.",
+      "[Press Esc or click outside the form, then →] If asked: fields not on the form use typical values or are left missing, so the numbers are illustrative.",
     ],
     render: ({ model }) => <div className="select-text"><Demo model={model} /></div>,
   },
@@ -644,10 +648,10 @@ export const SLIDES: SlideDef[] = [
     speaker: "Nils",
     steps: 3,
     notes: [
-      "We also checked whether the model works equally well for different groups. This shows how many readmissions it catches for each race group.",
-      "[click] For the two largest groups it's close, about half. For smaller groups it looks lower, but look at the counts: the Asian group has only 13 readmissions in the test set, so we can't tell. That's a problem too, because we can't confirm it works for them.",
-      "[click] By age, it ranks older patients worse: ROC-AUC is 0.73 for patients under 50 and 0.66 for patients over 70.",
-      "[click] Readmission also depends on access to care, and the data is from 1999 to 2008. So it should only be used to offer extra help, with a clinician deciding, and audited before use.",
+      "Does it work equally well for everyone? For the two largest racial groups, it catches about half of readmissions.",
+      "[click] For small groups we have too few cases to tell, so we can't confirm it works for them.",
+      "[click] It also ranks patients over 70 worse.",
+      "[click] So we'd use it only to offer extra help, with a clinician deciding, and audit it first.",
     ],
     ask: [
       "Removing race barely changes the score, but payer and prior visits can act as proxies for access to care.",
@@ -673,10 +677,10 @@ export const SLIDES: SlideDef[] = [
     speaker: "Nils",
     steps: 3,
     notes: [
-      "Three takeaways. First, XGBoost was the best model, but only by a little. The data limits every model.",
-      "[click] Second, keeping missing values visible to the model matters more than how cleverly you fill them in.",
-      "[click] Third, this is a useful tool for ranking who to follow up with, not a clinical decision tool. We also learned that a method that shines on the paper's benchmarks doesn't always have a big edge on real data.",
-      "[click] Thanks for listening. We're happy to take questions.",
+      "Three lessons. One: XGBoost was best, but only by a little. The data limits every model.",
+      "[click] Two: keep missing values visible. It matters more than how you fill them in.",
+      "[click] Three: this is a ranking tool, not a decision tool.",
+      "[click] Thank you, questions?",
     ],
     render: ({ n }) => {
       const t: [string, string][] = [
